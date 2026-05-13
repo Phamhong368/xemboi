@@ -409,6 +409,30 @@ textarea:focus {
   line-height: 1.55;
 }
 
+.follow-up-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.follow-up-question {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(245, 219, 169, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #fff2d5;
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.follow-up-question:hover {
+  border-color: rgba(240, 200, 108, 0.55);
+  background: rgba(240, 200, 108, 0.1);
+}
+
 .timeline {
   display: grid;
   gap: 10px;

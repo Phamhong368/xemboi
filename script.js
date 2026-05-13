@@ -589,6 +589,7 @@ function renderReading(data, reading) {
       </div>
     </section>`
     : "";
+  const followUpSection = buildFollowUpSection(data, reading);
   resultCard.innerHTML = `
     <p class="eyebrow">Kết quả ${reading.topic.title}</p>
     <h2>${escapeHtml(data.fullName.trim())} gặp quẻ ${reading.palace}</h2>
@@ -634,6 +635,7 @@ function renderReading(data, reading) {
           .join("")}
       </div>
     </section>
+    ${followUpSection}
     <div class="consult-actions">
       <button class="primary-button" id="sendConsultMessage" type="button">Gửi thông số qua Facebook</button>
       <button class="secondary-button" id="copyConsultMessage" type="button">Copy thông số</button>
@@ -647,9 +649,11 @@ function renderReading(data, reading) {
 
   document.querySelector("#sendConsultMessage").addEventListener("click", sendConsultToMessenger);
   document.querySelector("#copyConsultMessage").addEventListener("click", copyConsultText);
+  attachFollowUpHandlers();
 }
 
 function renderTarotReading(data, reading) {
+  const followUpSection = buildFollowUpSection(data, reading);
   resultCard.innerHTML = `
     <p class="eyebrow">Kết quả Tarot</p>
     <h2>Trải bài ${reading.deep.tarot.length} lá cho ${escapeHtml(data.fullName.trim())}</h2>
@@ -675,6 +679,7 @@ function renderTarotReading(data, reading) {
       <h3>Tổng luận tarot</h3>
       <p>${buildTarotSummary(data, reading)}</p>
     </section>
+    ${followUpSection}
     <div class="consult-actions">
       <button class="primary-button" id="sendConsultMessage" type="button">Gửi thông số qua Facebook</button>
       <button class="secondary-button" id="copyConsultMessage" type="button">Copy thông số</button>
@@ -687,6 +692,89 @@ function renderTarotReading(data, reading) {
 
   document.querySelector("#sendConsultMessage").addEventListener("click", sendConsultToMessenger);
   document.querySelector("#copyConsultMessage").addEventListener("click", copyConsultText);
+  attachFollowUpHandlers();
+}
+
+function buildFollowUpSection(data, reading) {
+  const questions = getFollowUpQuestions(data, reading);
+  return `
+    <section class="reading-section">
+      <h3>Câu hỏi nên hỏi tiếp</h3>
+      <p>Khách có thể bấm một câu để copy toàn bộ thông tin và gửi qua Facebook tư vấn sâu hơn.</p>
+      <div class="follow-up-grid">
+        ${questions
+          .map(
+            (question) =>
+              `<button class="follow-up-question" type="button" data-question="${escapeHtml(question)}">${escapeHtml(question)}</button>`
+          )
+          .join("")}
+      </div>
+    </section>`;
+}
+
+function getFollowUpQuestions(data, reading) {
+  if (reading.type === "tarot") {
+    return [
+      "Lá nào đang là điểm nghẽn lớn nhất của tôi?",
+      "Nếu tôi hành động ngay bây giờ thì kết quả gần nhất là gì?",
+      "Tôi nên tránh điều gì để không làm lệch năng lượng trải bài?",
+      "Có dấu hiệu nào cho thấy tôi nên chờ thêm không?",
+    ];
+  }
+
+  if (data.readingMode === "couple") {
+    return [
+      "Người ấy có thật lòng muốn đi xa với tôi không?",
+      "Điểm lệch lớn nhất giữa hai đứa là gì?",
+      "Tôi nên chủ động hay chờ người ấy rõ ràng hơn?",
+      "Trong 7 ngày tới nên làm gì để mối quan hệ tốt hơn?",
+    ];
+  }
+
+  const byTopic = {
+    "tong-quan": [
+      "Vấn đề chính tôi cần giải quyết trước là gì?",
+      "Trong 7 ngày tới tôi nên ưu tiên việc nào?",
+      "Có cơ hội nào đang đến mà tôi chưa nhìn ra không?",
+      "Tôi đang lặp lại mẫu cũ nào cần dừng lại?",
+    ],
+    "tinh-duyen": [
+      "Người tôi đang nghĩ tới có phù hợp với tôi không?",
+      "Tôi nên mở lòng hay đặt ranh giới rõ hơn?",
+      "Mối quan hệ này đang vướng ở điểm cảm xúc nào?",
+      "Tình duyên gần tới có dấu hiệu mới không?",
+    ],
+    "su-nghiep": [
+      "Công việc hiện tại có nên tiếp tục không?",
+      "Tôi nên đổi hướng hay kiên trì thêm?",
+      "Cơ hội nghề nghiệp gần nhất đến từ đâu?",
+      "Tôi cần cải thiện điểm nào để được ghi nhận hơn?",
+    ],
+    "tai-loc": [
+      "Dòng tiền của tôi đang hao ở đâu?",
+      "Có cơ hội tăng thu nào gần tới không?",
+      "Tôi có nên đầu tư hoặc chi tiền cho việc này không?",
+      "Tôi nên tránh rủi ro tài chính nào trong tháng này?",
+    ],
+  };
+
+  return byTopic[data.topic] || byTopic["tong-quan"];
+}
+
+function attachFollowUpHandlers() {
+  for (const button of document.querySelectorAll(".follow-up-question")) {
+    button.addEventListener("click", async () => {
+      const question = button.dataset.question;
+      const text = `${latestConsultText}\n\nCâu hỏi muốn hỏi thêm:\n${question}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("Đã copy câu hỏi hỏi thêm. Khi Facebook mở ra, hãy dán vào khung chat và gửi.");
+      } catch (error) {
+        window.prompt("Copy nội dung này rồi dán vào Facebook:", text);
+      }
+      window.open(CUSTOMER_CONTACT_URL, "facebook-follow-up");
+    });
+  }
 }
 
 function buildTarotSummary(data, reading) {
