@@ -16,8 +16,6 @@ const businessInboxLink = document.querySelector("#businessInboxLink");
 const messengerTop = document.querySelector("#messengerTop");
 const floatingMessenger = document.querySelector("#floatingMessenger");
 const readingType = document.querySelector("#readingType");
-const tarotCountField = document.querySelector("#tarotCountField");
-const tarotCount = document.querySelector("#tarotCount");
 const readingMode = document.querySelector("#readingMode");
 const partnerFields = document.querySelector("#partnerFields");
 const topicSelect = document.querySelector("#topicSelect");
@@ -40,7 +38,6 @@ floatingMessenger.href = CUSTOMER_CONTACT_URL;
 
 readingType.addEventListener("change", () => {
   const isTarot = readingType.value === "tarot";
-  tarotCountField.hidden = !isTarot;
   for (const field of astrologyFields) {
     field.hidden = isTarot;
   }
@@ -396,42 +393,23 @@ function buildDeepReading(data, reading, seed) {
     timeline: buildTimeline(seed, reading),
     deepAnswers: data.readingType === "tu-vi" ? buildDeepAnswers(data, reading, seed) : [],
     couple: buildCoupleReading(data, reading, seed),
-    tarot: buildTarotSpread(data, reading, seed),
+    tarot: [],
   };
 }
 
-function buildTarotSpread(data, reading, seed) {
-  const count = Number(data.tarotCount || 3);
-  const positionSets = {
-    1: ["Thông điệp chính"],
-    3:
-      data.readingMode === "couple"
-        ? ["Năng lượng của bạn", "Năng lượng người ấy", "Hướng đi của mối quan hệ"]
-        : ["Gốc vấn đề", "Hiện tại", "Lời khuyên"],
-    5: ["Gốc vấn đề", "Điều đang hỗ trợ", "Điều đang cản trở", "Việc nên làm", "Kết quả gần"],
-    7: ["Hiện trạng", "Điều ẩn dưới bề mặt", "Bài học cũ", "Nỗi sợ", "Cơ hội", "Hành động nên làm", "Thông điệp cuối"],
-  };
-  const positions = positionSets[count] || positionSets[3];
-  const used = new Set();
+function buildTarotSpreadFromSelection(data, selectedIndexes) {
+  const positions = ["Gốc vấn đề", "Hiện tại", "Lời khuyên"];
+  const seed = hashText(`${data.question || ""}${selectedIndexes.join("-")}`);
 
-  return positions.map((position, index) => {
-    let cardIndex = Math.abs(seed + reading.lifePath * (index + 2) + index * 7) % tarotDeck.length;
-    while (used.has(cardIndex)) {
-      cardIndex = (cardIndex + 1) % tarotDeck.length;
-    }
-    used.add(cardIndex);
-
+  return selectedIndexes.map((cardIndex, index) => {
     const card = tarotDeck[cardIndex];
-    const reversed = (seed + index + reading.luck) % 4 === 0;
-    const meaning = reversed ? card.reversed : card.upright;
-    const topicLine = getTarotTopicLine(data, reading, card, reversed, index);
-
+    const reversed = (seed + cardIndex + index) % 4 === 0;
     return {
       ...card,
-      position,
+      position: positions[index],
       reversed,
-      meaning,
-      topicLine,
+      meaning: reversed ? card.reversed : card.upright,
+      topicLine: getTarotTopicLine(data, { topic: { title: "Tarot" } }, card, reversed, index),
     };
   });
 }
@@ -616,8 +594,6 @@ function createReading(data) {
 }
 
 function createTarotOnlyReading(data) {
-  const questionSeed = data.question || `${Date.now()}`;
-  const seed = hashText(`${questionSeed}${data.deepQuestion1}${data.deepQuestion2}${data.deepQuestion3}`);
   const baseReading = {
     topic: { title: "Tarot" },
     type: "tarot",
@@ -636,7 +612,7 @@ function createTarotOnlyReading(data) {
   return {
     ...baseReading,
     deep: {
-      tarot: buildTarotSpread(data, baseReading, seed),
+      tarot: [],
       deepAnswers: [],
       couple: null,
     },
@@ -741,6 +717,11 @@ function renderReading(data, reading) {
 }
 
 function renderTarotReading(data, reading) {
+  if (!reading.deep.tarot.length) {
+    renderTarotPicker(data, reading);
+    return;
+  }
+
   const followUpSection = buildFollowUpSection(data, reading);
   resultCard.innerHTML = `
     <p class="eyebrow">Kết quả Tarot</p>
@@ -781,6 +762,60 @@ function renderTarotReading(data, reading) {
   document.querySelector("#sendConsultMessage").addEventListener("click", sendConsultToMessenger);
   document.querySelector("#copyConsultMessage").addEventListener("click", copyConsultText);
   attachFollowUpHandlers();
+}
+
+function renderTarotPicker(data, reading) {
+  resultCard.innerHTML = `
+    <p class="eyebrow">Tarot</p>
+    <h2>Chọn 3 lá trong bộ 78 lá</h2>
+    <p>${(data.question || "").trim() ? `Câu hỏi: ${escapeHtml(data.question.trim())}` : "Hãy giữ câu hỏi trong đầu, rồi chọn 3 lá bài."}</p>
+    <section class="reading-section">
+      <h3>Bộ bài 78 lá</h3>
+      <p>Chọn đúng 3 lá. Lá sẽ được lật theo thứ tự: Gốc vấn đề, Hiện tại, Lời khuyên.</p>
+      <div class="tarot-pick-status" id="tarotPickStatus">Đã chọn 0/3 lá</div>
+      <div class="tarot-deck-grid">
+        ${tarotDeck
+          .map(
+            (card, index) => `
+              <button class="tarot-back-card" type="button" data-card-index="${index}" aria-label="Lá tarot ${index + 1}">
+                <span>${index + 1}</span>
+              </button>
+            `
+          )
+          .join("")}
+      </div>
+      <button class="primary-button tarot-reveal-button" id="revealTarotCards" type="button" disabled>Lật bài và luận giải</button>
+    </section>
+  `;
+
+  const selected = [];
+  const status = document.querySelector("#tarotPickStatus");
+  const reveal = document.querySelector("#revealTarotCards");
+
+  for (const button of document.querySelectorAll(".tarot-back-card")) {
+    button.addEventListener("click", () => {
+      const cardIndex = Number(button.dataset.cardIndex);
+      if (button.classList.contains("selected")) {
+        button.classList.remove("selected");
+        selected.splice(selected.indexOf(cardIndex), 1);
+      } else {
+        if (selected.length >= 3) {
+          return;
+        }
+        button.classList.add("selected");
+        selected.push(cardIndex);
+      }
+
+      status.textContent = `Đã chọn ${selected.length}/3 lá`;
+      reveal.disabled = selected.length !== 3;
+    });
+  }
+
+  reveal.addEventListener("click", () => {
+    reading.deep.tarot = buildTarotSpreadFromSelection(data, selected);
+    latestConsultText = buildConsultText(data, reading);
+    renderTarotReading(data, reading);
+  });
 }
 
 function buildFollowUpSection(data, reading) {
