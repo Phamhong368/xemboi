@@ -53,7 +53,12 @@ Cấu hình cần có khi kết nối Meta:
 ```bash
 META_VERIFY_TOKEN=xemboi_verify_token
 META_PAGE_ACCESS_TOKEN=page_access_token_cua_ban
+PAYMENT_CODE=MMVT2026
+PAYMENT_AMOUNT=50.000đ
+PAYMENT_INFO=Chuyển khoản theo thông tin của Page Mật Mã Vũ Trụ. Sau khi chuyển, nhắn mã xác nhận để mở lá số.
 ```
+
+Bot mặc định yêu cầu khách thanh toán trước. Sau khi bạn xác nhận đã nhận tiền, gửi mã `PAYMENT_CODE` cho khách trong Meta Inbox. Khách nhắn đúng mã thì bot mới bắt đầu hỏi thông tin và trả lá số.
 
 Webhook URL trên Meta sẽ là:
 

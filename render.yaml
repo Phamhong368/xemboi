@@ -10,3 +10,9 @@ services:
         value: xemboi_verify_token
       - key: META_PAGE_ACCESS_TOKEN
         sync: false
+      - key: PAYMENT_CODE
+        value: MMVT2026
+      - key: PAYMENT_AMOUNT
+        value: 50.000đ
+      - key: PAYMENT_INFO
+        value: Chuyển khoản theo thông tin của Page Mật Mã Vũ Trụ. Sau khi chuyển, nhắn mã xác nhận để mở lá số.

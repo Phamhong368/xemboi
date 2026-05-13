@@ -4,6 +4,11 @@ import { URL } from "node:url";
 const PORT = Number(process.env.PORT || 3000);
 const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || "xemboi_verify_token";
 const PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || "";
+const PAYMENT_CODE = (process.env.PAYMENT_CODE || "MMVT2026").trim().toLowerCase();
+const PAYMENT_AMOUNT = process.env.PAYMENT_AMOUNT || "50.000đ";
+const PAYMENT_INFO =
+  process.env.PAYMENT_INFO ||
+  "Chuyển khoản theo thông tin của Page Mật Mã Vũ Trụ. Sau khi chuyển, nhắn mã xác nhận để mở lá số.";
 
 const sessions = new Map();
 
@@ -219,6 +224,16 @@ function createReading(data) {
 
 function nextPrompt(session) {
   switch (session.step) {
+    case "payment":
+      return [
+        "Để xem lá số, bạn vui lòng thanh toán trước.",
+        "",
+        `Phí xem: ${PAYMENT_AMOUNT}`,
+        PAYMENT_INFO,
+        "",
+        "Sau khi thanh toán, hãy nhắn mã xác nhận mà Page cung cấp.",
+        "Nếu đã có mã, hãy gửi mã ngay tại đây.",
+      ].join("\n");
     case "name":
       return "Chào bạn. Để xem lá số, hãy gửi họ tên của bạn.";
     case "birthDate":
@@ -239,9 +254,25 @@ function handleBotMessage(senderId, text) {
   let session = sessions.get(senderId);
 
   if (!session || ["xem bói", "xem boi", "bắt đầu", "bat dau", "start", "reset"].includes(lower)) {
-    session = { step: "name", data: {} };
+    session = { step: "payment", data: {} };
     sessions.set(senderId, session);
     return nextPrompt(session);
+  }
+
+  if (session.step === "payment") {
+    if (lower !== PAYMENT_CODE) {
+      return [
+        "Mã xác nhận chưa đúng.",
+        "",
+        `Phí xem: ${PAYMENT_AMOUNT}`,
+        PAYMENT_INFO,
+        "",
+        "Sau khi thanh toán, hãy nhắn đúng mã xác nhận để bắt đầu xem lá số.",
+      ].join("\n");
+    }
+
+    session.step = "name";
+    return "Đã xác nhận thanh toán. Bây giờ hãy gửi họ tên của bạn.";
   }
 
   if (session.step === "name") {
