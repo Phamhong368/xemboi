@@ -15,6 +15,8 @@ const profileLink = document.querySelector("#profileLink");
 const businessInboxLink = document.querySelector("#businessInboxLink");
 const messengerTop = document.querySelector("#messengerTop");
 const floatingMessenger = document.querySelector("#floatingMessenger");
+const readingMode = document.querySelector("#readingMode");
+const partnerFields = document.querySelector("#partnerFields");
 
 let latestShareText = "Tôi vừa gieo quẻ trên Xem Bói An Nhiên.";
 let latestConsultText = "";
@@ -24,6 +26,14 @@ profileLink.href = FACEBOOK_PROFILE_URL;
 businessInboxLink.href = BUSINESS_INBOX_URL;
 messengerTop.href = CUSTOMER_CONTACT_URL;
 floatingMessenger.href = CUSTOMER_CONTACT_URL;
+
+readingMode.addEventListener("change", () => {
+  const isCouple = readingMode.value === "couple";
+  partnerFields.hidden = !isCouple;
+  for (const field of partnerFields.querySelectorAll("input")) {
+    field.required = isCouple && field.name !== "partnerBirthTime";
+  }
+});
 
 const topicCopy = {
   "tong-quan": {
@@ -198,6 +208,25 @@ function getHourBranch(timeText) {
   return `Giờ ${branches[hour]}`;
 }
 
+function buildPersonProfile(name, birthDateText, birthTimeText = "") {
+  const birthDate = new Date(`${birthDateText}T12:00:00`);
+  const zodiac = getZodiac(birthDate);
+  const lifePath = getLifePath(birthDateText);
+  const element = elementsByMonth[birthDate.getMonth()];
+  const hourBranch = getHourBranch(birthTimeText);
+
+  return {
+    name: name.trim(),
+    birthDate,
+    birthDateText,
+    birthTimeText,
+    zodiac,
+    lifePath,
+    element,
+    hourBranch,
+  };
+}
+
 function buildQuestionAdvice(question, palace, topicTitle) {
   if (!question.trim()) {
     return `Quẻ ${palace} không khuyên bạn đi nhanh. Quẻ này nghiêng về việc nhìn lại trật tự bên trong: điều gì đang thật sự quan trọng với ${topicTitle.toLowerCase()}, điều gì chỉ là tiếng ồn, và việc nào nếu làm xong sẽ khiến các việc còn lại nhẹ hơn.`;
@@ -229,6 +258,56 @@ function buildDeepReading(data, reading, seed) {
     topicFocus: buildTopicFocus(data.topic, reading),
     advice: buildQuestionAdvice(data.question || "", reading.palace, reading.topic.title),
     timeline: buildTimeline(seed, reading),
+    deepAnswers: buildDeepAnswers(data, reading, seed),
+    couple: buildCoupleReading(data, reading, seed),
+  };
+}
+
+function buildDeepAnswers(data, reading, seed) {
+  const questions = [data.deepQuestion1, data.deepQuestion2, data.deepQuestion3]
+    .map((question) => (question || "").trim())
+    .filter(Boolean)
+    .slice(0, 3);
+  const answerStyles = [
+    `Quẻ ${reading.palace} cho thấy trọng tâm không nằm ở câu trả lời nhanh, mà ở việc bạn dám nhìn thẳng phần đang né tránh. Hãy chọn một hành động nhỏ có thể kiểm chứng trong 24 giờ.`,
+    `Tổ hợp ${reading.zodiac} và số chủ đạo ${reading.lifePath} nghiêng về việc làm rõ ranh giới. Điều nên hỏi tiếp là: việc này đến từ tình yêu, thói quen hay nỗi sợ mất mát?`,
+    `Vận hiện tại khuyên bạn đừng ép kết quả. Nếu một việc cần sự đồng thuận, hãy nhìn phản ứng của đối phương khi bạn nói thật nhu cầu của mình.`,
+  ];
+
+  return questions.map((question, index) => ({
+    question,
+    answer: answerStyles[(seed + index) % answerStyles.length],
+  }));
+}
+
+function buildCoupleReading(data, reading, seed) {
+  if (data.readingMode !== "couple") {
+    return null;
+  }
+
+  const partner = buildPersonProfile(data.partnerName || "Người ấy", data.partnerBirthDate, data.partnerBirthTime);
+  const selfScore = reading.lifePath + reading.energy + reading.clarity;
+  const partnerScore = partner.lifePath * 11 + partner.birthDate.getDate() + partner.birthDate.getMonth();
+  const harmony = 52 + ((selfScore + partnerScore + seed) % 43);
+  const elementMatch = reading.element === partner.element ? "đồng khí" : "bù khí";
+  const zodiacLine =
+    reading.zodiac === partner.zodiac
+      ? "Hai bạn có cách phản ứng khá giống nhau, dễ hiểu nhau nhưng cũng dễ cùng mắc một điểm mù."
+      : `Bạn mang sắc thái ${reading.zodiac}, còn người ấy mang sắc thái ${partner.zodiac}; sự khác biệt này tạo lực hút nếu cả hai biết nói rõ nhu cầu.`;
+  const advice =
+    harmony >= 82
+      ? "Mối quan hệ có độ hòa hợp tốt, nhưng cần tránh chủ quan. Việc nên làm là đặt một kế hoạch chung nhỏ để kiểm tra khả năng đồng hành."
+      : harmony >= 68
+        ? "Mối quan hệ có duyên nhưng cần học cách đi cùng nhịp. Một người muốn rõ ràng nhanh, người kia cần thời gian cảm nhận."
+        : "Mối quan hệ có lực hút nhưng cũng có bài học lớn về ranh giới. Nếu tiếp tục, hai bạn cần nói thật về kỳ vọng thay vì đoán ý nhau.";
+
+  return {
+    partner,
+    harmony,
+    elementMatch,
+    zodiacLine,
+    advice,
+    summary: `${data.fullName.trim()} và ${partner.name} có điểm hòa hợp ${harmony}/100, dạng ${elementMatch}.`,
   };
 }
 
@@ -268,13 +347,14 @@ function buildTimeline(seed, reading) {
 }
 
 function createReading(data) {
-  const birthDate = new Date(`${data.birthDate}T12:00:00`);
+  const profile = buildPersonProfile(data.fullName, data.birthDate, data.birthTime);
+  const birthDate = profile.birthDate;
   const seed = hashText(`${data.fullName}${data.birthDate}${data.birthTime}${data.gender}${data.topic}`);
   const topic = topicCopy[data.topic] || topicCopy["tong-quan"];
-  const zodiac = getZodiac(birthDate);
-  const lifePath = getLifePath(data.birthDate);
-  const element = elementsByMonth[birthDate.getMonth()];
-  const hourBranch = getHourBranch(data.birthTime);
+  const zodiac = profile.zodiac;
+  const lifePath = profile.lifePath;
+  const element = profile.element;
+  const hourBranch = profile.hourBranch;
   const palace = pick(palaces, seed + lifePath);
   const energy = Math.min(99, 55 + ((seed + lifePath) % 41));
   const clarity = Math.min(99, 52 + ((seed * 3 + birthDate.getDate()) % 43));
@@ -308,6 +388,34 @@ function createReading(data) {
 
 function renderReading(data, reading) {
   latestConsultText = buildConsultText(data, reading);
+  const coupleSection = reading.deep.couple
+    ? `
+    <section class="reading-section">
+      <h3>Luận tình duyên đôi lứa</h3>
+      <p>${reading.deep.couple.zodiacLine}</p>
+      <div class="destiny-grid">
+        <div class="destiny-item"><span>Người ấy</span><strong>${escapeHtml(reading.deep.couple.partner.name)}</strong></div>
+        <div class="destiny-item"><span>Cung</span><strong>${reading.deep.couple.partner.zodiac}</strong></div>
+        <div class="destiny-item"><span>Số chủ đạo</span><strong>${reading.deep.couple.partner.lifePath}</strong></div>
+        <div class="destiny-item"><span>Hòa hợp</span><strong>${reading.deep.couple.harmony}/100</strong></div>
+      </div>
+      <p>${reading.deep.couple.advice}</p>
+    </section>`
+    : "";
+  const deepQuestionSection = reading.deep.deepAnswers.length
+    ? `
+    <section class="reading-section">
+      <h3>Trả lời câu hỏi chuyên sâu</h3>
+      <div class="deep-list">
+        ${reading.deep.deepAnswers
+          .map(
+            (item) =>
+              `<div class="deep-answer"><strong>${escapeHtml(item.question)}</strong><span>${item.answer}</span></div>`
+          )
+          .join("")}
+      </div>
+    </section>`
+    : "";
 
   resultCard.innerHTML = `
     <p class="eyebrow">Kết quả ${reading.topic.title}</p>
@@ -340,6 +448,8 @@ function renderReading(data, reading) {
       <h3>Luận theo chủ đề</h3>
       <p>${reading.deep.topicFocus}</p>
     </section>
+    ${coupleSection}
+    ${deepQuestionSection}
     <section class="reading-section">
       <h3>Hướng xử lý</h3>
       <p>${reading.deep.advice}</p>
@@ -369,15 +479,33 @@ function renderReading(data, reading) {
 
 function buildConsultText(data, reading) {
   const question = (data.question || "").trim() || "Chưa nhập câu hỏi riêng";
+  const deepQuestions = [data.deepQuestion1, data.deepQuestion2, data.deepQuestion3]
+    .map((item) => (item || "").trim())
+    .filter(Boolean);
+  const partnerLines = reading.deep.couple
+    ? [
+        "",
+        "Thông tin người yêu:",
+        `Tên: ${reading.deep.couple.partner.name}`,
+        `Ngày sinh: ${data.partnerBirthDate}`,
+        `Giờ sinh: ${data.partnerBirthTime || "Chưa rõ"}`,
+        `Cung: ${reading.deep.couple.partner.zodiac}`,
+        `Số chủ đạo: ${reading.deep.couple.partner.lifePath}`,
+        `Điểm hòa hợp: ${reading.deep.couple.harmony}/100`,
+      ]
+    : [];
   return [
     "Em muốn tư vấn theo lá số này:",
     "",
+    `Kiểu xem: ${data.readingMode === "couple" ? "Mình và người yêu" : "Bản thân"}`,
     `Họ tên: ${data.fullName.trim()}`,
     `Ngày sinh: ${data.birthDate}`,
     `Giờ sinh: ${data.birthTime || "Chưa rõ"}`,
     `Giới tính: ${data.gender}`,
     `Chủ đề: ${reading.topic.title}`,
     `Câu hỏi: ${question}`,
+    ...deepQuestions.map((item, index) => `Câu hỏi chuyên sâu ${index + 1}: ${item}`),
+    ...partnerLines,
     "",
     `Quẻ: ${reading.palace}`,
     `Cung hoàng đạo: ${reading.zodiac}`,
@@ -391,6 +519,7 @@ function buildConsultText(data, reading) {
     "Tóm tắt luận giải:",
     reading.deep.currentFlow,
     reading.deep.topicFocus,
+    reading.deep.couple ? reading.deep.couple.summary : "",
   ].join("\n");
 }
 

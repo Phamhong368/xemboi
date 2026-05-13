@@ -52,6 +52,14 @@
             <input name="fullName" autocomplete="name" placeholder="Nguyễn Văn A" required />
           </label>
 
+          <label>
+            Xem cho ai
+            <select name="readingMode" id="readingMode">
+              <option value="self">Xem cho bản thân</option>
+              <option value="couple">Xem mình và người yêu</option>
+            </select>
+          </label>
+
           <div class="two-col">
             <label>
               Ngày sinh
@@ -83,14 +91,48 @@
             </label>
           </div>
 
+          <div class="partner-fields" id="partnerFields" hidden>
+            <p class="eyebrow">Thông tin người yêu</p>
+            <label>
+              Tên người yêu
+              <input name="partnerName" placeholder="Tên người ấy" />
+            </label>
+            <div class="two-col">
+              <label>
+                Ngày sinh người yêu
+                <input name="partnerBirthDate" type="date" />
+              </label>
+              <label>
+                Giờ sinh người yêu
+                <input name="partnerBirthTime" type="time" />
+              </label>
+            </div>
+          </div>
+
           <label>
-            Câu hỏi riêng
+            Câu hỏi chính
             <textarea
               name="question"
               rows="3"
-              placeholder="Ví dụ: Tháng này công việc của tôi có thuận lợi không?"
+              placeholder="Ví dụ: Mối quan hệ này có đi xa được không?"
             ></textarea>
           </label>
+
+          <details class="deep-questions">
+            <summary>Thêm 1-3 câu hỏi chuyên sâu</summary>
+            <label>
+              Câu hỏi chuyên sâu 1
+              <textarea name="deepQuestion1" rows="2" placeholder="Điều gì đang cản trở tôi hoặc mối quan hệ này?"></textarea>
+            </label>
+            <label>
+              Câu hỏi chuyên sâu 2
+              <textarea name="deepQuestion2" rows="2" placeholder="Tôi nên làm gì trong 7 ngày tới?"></textarea>
+            </label>
+            <label>
+              Câu hỏi chuyên sâu 3
+              <textarea name="deepQuestion3" rows="2" placeholder="Có dấu hiệu nào cần chú ý không?"></textarea>
+            </label>
+          </details>
 
           <div class="form-actions">
             <button class="primary-button" type="submit">Xem kết quả</button>

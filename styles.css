@@ -149,6 +149,25 @@ p {
   margin-bottom: 18px;
 }
 
+.partner-fields,
+.deep-questions {
+  margin: 18px 0;
+  border: 1px solid rgba(245, 219, 169, 0.16);
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(8, 7, 6, 0.28);
+}
+
+.deep-questions summary {
+  cursor: pointer;
+  color: var(--gold-strong);
+  font-weight: 900;
+}
+
+.deep-questions label:first-of-type {
+  margin-top: 16px;
+}
+
 label {
   display: grid;
   gap: 8px;
@@ -299,6 +318,29 @@ textarea:focus {
 .reading-section p {
   margin-bottom: 0;
   color: #eadcc4;
+}
+
+.deep-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.deep-answer {
+  border-left: 3px solid var(--gold);
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.deep-answer strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #fff2d5;
+}
+
+.deep-answer span {
+  color: #eadcc4;
+  line-height: 1.55;
 }
 
 .timeline {
