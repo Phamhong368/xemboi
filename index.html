@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Xem Bói An Nhiên</title>
+    <meta
+      name="description"
+      content="Web xem bói giải trí với lá số tổng quan, gợi ý tình duyên, sự nghiệp và tích hợp Facebook."
+    />
+    <meta property="og:title" content="Xem Bói An Nhiên" />
+    <meta property="og:description" content="Nhận một lá số giải trí và chia sẻ lên Facebook." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/hero-fortune.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="fb-root"></div>
+    <main class="shell">
+      <section class="workspace" aria-label="Ứng dụng xem bói">
+        <div class="hero-panel">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true">✦</span>
+            <span>Xem Bói An Nhiên</span>
+          </div>
+
+          <div class="intro">
+            <p class="eyebrow">Lá số giải trí cá nhân</p>
+            <h1>Gieo một quẻ nhỏ cho ngày hôm nay.</h1>
+            <p>
+              Nhập thông tin cơ bản để nhận thông điệp tổng quan về tình duyên, sự nghiệp,
+              tài lộc và năng lượng hiện tại.
+            </p>
+          </div>
+
+          <div class="hero-actions">
+            <button class="ghost-button" id="shareTop" type="button">Chia sẻ Facebook</button>
+            <a class="messenger-link" id="messengerTop" href="#" target="_blank" rel="noreferrer">
+              Mở Facebook tư vấn
+            </a>
+          </div>
+        </div>
+
+        <form class="reading-form" id="readingForm">
+          <div class="form-header">
+            <p class="eyebrow">Thông tin gieo quẻ</p>
+            <h2>Lấy lá số</h2>
+          </div>
+
+          <label>
+            Họ tên
+            <input name="fullName" autocomplete="name" placeholder="Nguyễn Văn A" required />
+          </label>
+
+          <div class="two-col">
+            <label>
+              Ngày sinh
+              <input name="birthDate" type="date" required />
+            </label>
+            <label>
+              Giờ sinh
+              <input name="birthTime" type="time" />
+            </label>
+          </div>
+
+          <div class="two-col">
+            <label>
+              Giới tính
+              <select name="gender">
+                <option value="khac">Khác / không nói</option>
+                <option value="nam">Nam</option>
+                <option value="nu">Nữ</option>
+              </select>
+            </label>
+            <label>
+              Chủ đề
+              <select name="topic">
+                <option value="tong-quan">Tổng quan</option>
+                <option value="tinh-duyen">Tình duyên</option>
+                <option value="su-nghiep">Sự nghiệp</option>
+                <option value="tai-loc">Tài lộc</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Câu hỏi riêng
+            <textarea
+              name="question"
+              rows="3"
+              placeholder="Ví dụ: Tháng này công việc của tôi có thuận lợi không?"
+            ></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button class="primary-button" type="submit">Xem kết quả</button>
+            <button class="icon-button" id="facebookLogin" type="button" title="Đăng nhập Facebook">
+              f
+            </button>
+          </div>
+          <p class="fine-print">
+            Nội dung chỉ mang tính giải trí và tham khảo, không thay thế tư vấn chuyên môn.
+          </p>
+        </form>
+      </section>
+
+      <section class="result-grid" aria-live="polite">
+        <article class="result-card main-result" id="resultCard">
+          <p class="eyebrow">Kết quả</p>
+          <h2>Lá số của bạn sẽ hiện ở đây</h2>
+          <p>
+            Sau khi gieo quẻ, hệ thống sẽ tạo thông điệp tổng quan kèm cung hoàng đạo,
+            số chủ đạo, ngũ hành và nút gửi thông số sang Facebook để tư vấn tiếp.
+          </p>
+        </article>
+
+        <aside class="facebook-card">
+          <p class="eyebrow">Facebook</p>
+          <h2>Tư vấn qua Facebook</h2>
+          <p>
+            Khách xem kết quả xong bấm “Gửi thông số qua Facebook”, sau đó dán nội dung đã copy
+            vào cuộc trò chuyện với bạn.
+          </p>
+          <div class="social-buttons">
+            <button class="secondary-button" id="shareResult" type="button">Chia sẻ kết quả</button>
+            <a class="secondary-link" id="pageLink" href="#" target="_blank" rel="noreferrer">
+              Mở Facebook tư vấn
+            </a>
+            <a class="secondary-link" id="profileLink" href="#" target="_blank" rel="noreferrer">
+              Facebook cá nhân
+            </a>
+            <a class="secondary-link admin-link" id="businessInboxLink" href="#" target="_blank" rel="noreferrer">
+              Mở hộp thư tư vấn
+            </a>
+          </div>
+          <p class="fine-print">
+            Cách này không cần mua miền và không cần Facebook App. Web chỉ tạo lá số, Facebook là nơi bạn tư vấn chính.
+          </p>
+        </aside>
+      </section>
+    </main>
+
+    <a class="floating-messenger" id="floatingMessenger" href="#" target="_blank" rel="noreferrer">
+      <span aria-hidden="true">f</span>
+      Mở Facebook tư vấn
+    </a>
+
+    <script src="script.js"></script>
+  </body>
+</html>

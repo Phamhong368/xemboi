@@ -1,0 +1,10 @@
+{
+  "name": "xem-boi-facebook-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node bot-server.mjs",
+    "check": "node --check bot-server.mjs"
+  }
+}

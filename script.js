@@ -1,0 +1,455 @@
+const FACEBOOK_APP_ID = "YOUR_FACEBOOK_APP_ID";
+const FACEBOOK_PAGE_ID = "61563211834277";
+const FACEBOOK_PAGE_URL = "https://www.facebook.com/profile.php?id=61563211834277&locale=vi_VN";
+const FACEBOOK_PROFILE_URL = "https://www.facebook.com/profile.php?id=100057491366920";
+const CUSTOMER_CONTACT_URL = FACEBOOK_PAGE_URL;
+const BUSINESS_INBOX_URL = "https://business.facebook.com/latest/inbox/all?asset_id=61563211834277";
+
+const form = document.querySelector("#readingForm");
+const resultCard = document.querySelector("#resultCard");
+const shareTop = document.querySelector("#shareTop");
+const shareResult = document.querySelector("#shareResult");
+const facebookLogin = document.querySelector("#facebookLogin");
+const pageLink = document.querySelector("#pageLink");
+const profileLink = document.querySelector("#profileLink");
+const businessInboxLink = document.querySelector("#businessInboxLink");
+const messengerTop = document.querySelector("#messengerTop");
+const floatingMessenger = document.querySelector("#floatingMessenger");
+
+let latestShareText = "Tôi vừa gieo quẻ trên Xem Bói An Nhiên.";
+let latestConsultText = "";
+
+pageLink.href = FACEBOOK_PAGE_URL;
+profileLink.href = FACEBOOK_PROFILE_URL;
+businessInboxLink.href = BUSINESS_INBOX_URL;
+messengerTop.href = CUSTOMER_CONTACT_URL;
+floatingMessenger.href = CUSTOMER_CONTACT_URL;
+
+const topicCopy = {
+  "tong-quan": {
+    title: "Tổng quan",
+    lines: [
+      "Vận khí hôm nay hợp với việc thu gọn mục tiêu, chọn một việc quan trọng và làm đến nơi.",
+      "Nếu phải quyết định, hãy dựa vào dữ kiện đã có thay vì nghe quá nhiều ý kiến trái chiều.",
+      "Một cuộc trò chuyện rõ ràng sẽ giúp tháo nút thắt đang nằm ở giữa kế hoạch.",
+    ],
+  },
+  "tinh-duyen": {
+    title: "Tình duyên",
+    lines: [
+      "Tình cảm nghiêng về sự lắng nghe, bớt thử lòng và nói thẳng điều mình cần.",
+      "Người độc thân dễ có tín hiệu tốt từ một mối quan hệ bắt đầu bằng sự tự nhiên.",
+      "Người đang yêu nên ưu tiên một buổi nói chuyện nhẹ nhàng hơn là tranh luận đúng sai.",
+    ],
+  },
+  "su-nghiep": {
+    title: "Sự nghiệp",
+    lines: [
+      "Công việc hợp với chiến lược chậm mà chắc, tránh ôm thêm việc khi nền cũ chưa vững.",
+      "Một người có kinh nghiệm có thể giúp bạn rút ngắn đường vòng nếu bạn hỏi đúng câu.",
+      "Hãy ưu tiên việc có kết quả đo được trong 48 giờ tới.",
+    ],
+  },
+  "tai-loc": {
+    title: "Tài lộc",
+    lines: [
+      "Tài chính cần kỷ luật nhỏ mỗi ngày hơn là một quyết định quá táo bạo.",
+      "Nên soát lại khoản chi lặp lại và trì hoãn giao dịch chưa thật cần thiết.",
+      "Có cơ hội tăng thu nếu bạn biết đóng gói kỹ năng thành một dịch vụ rõ ràng.",
+    ],
+  },
+};
+
+const palaces = [
+  "Bình Hòa",
+  "Minh Đường",
+  "Thanh Mộc",
+  "Kim Đăng",
+  "Thủy An",
+  "Sơn Nguyệt",
+  "Hỏa Âm",
+  "Vân Cát",
+  "Lưu Quang",
+  "Thiên Khôi",
+  "Ngọc Đường",
+  "Phúc Tinh",
+];
+
+const elementsByMonth = [
+  "Thủy",
+  "Mộc",
+  "Mộc",
+  "Thổ",
+  "Hỏa",
+  "Hỏa",
+  "Thổ",
+  "Kim",
+  "Kim",
+  "Thổ",
+  "Thủy",
+  "Thủy",
+];
+
+const elementAdvice = {
+  Kim: "Kim vượng ở sự rõ ràng: càng bớt rườm rà, đường đi càng sáng.",
+  Mộc: "Mộc vượng ở sự phát triển: nên nuôi một việc dài hạn thay vì nóng vội đổi hướng.",
+  Thủy: "Thủy vượng ở khả năng thích nghi: mềm mỏng nhưng cần giữ ranh giới.",
+  Hỏa: "Hỏa vượng ở hành động: hợp khởi động việc mới, nhưng tránh phản ứng theo cảm xúc.",
+  Thổ: "Thổ vượng ở nền tảng: làm chắc phần gốc trước khi mở rộng.",
+};
+
+const zodiacData = [
+  ["Ma Kết", 120],
+  ["Bảo Bình", 219],
+  ["Song Ngư", 320],
+  ["Bạch Dương", 420],
+  ["Kim Ngưu", 521],
+  ["Song Tử", 621],
+  ["Cự Giải", 722],
+  ["Sư Tử", 823],
+  ["Xử Nữ", 923],
+  ["Thiên Bình", 1023],
+  ["Bọ Cạp", 1122],
+  ["Nhân Mã", 1222],
+  ["Ma Kết", 1232],
+];
+
+const zodiacAdvice = {
+  "Bạch Dương": "Bạn có khí mở đường mạnh: khi đã thấy đúng thì muốn làm ngay. Điểm sáng là tốc độ và lòng can đảm, điểm cần giữ là đừng biến sự nóng ruột thành áp lực lên người khác.",
+  "Kim Ngưu": "Bạn có nền khí bền và thực tế. Vận tốt thường đến khi bạn tích lũy đều, nhưng nếu quá sợ thay đổi thì cơ hội mới dễ trôi qua trước mắt.",
+  "Song Tử": "Bạn có đầu óc linh hoạt, bắt tín hiệu nhanh và giỏi xoay chuyển. Điểm nghẽn là dễ phân tán, nên cần chọn một hướng chính để năng lượng không bị rải mỏng.",
+  "Cự Giải": "Bạn nhạy cảm với không khí xung quanh và dễ nhận ra điều người khác chưa nói. Đây là trực giác tốt, nhưng cần phân biệt cảm nhận thật với nỗi lo tự tạo.",
+  "Sư Tử": "Bạn có khí chất dẫn dắt và nhu cầu được ghi nhận. Khi dùng sự tự tin để nâng người khác lên, vận quý nhân dễ mở; khi cố chứng minh quá nhiều, vận lại nặng.",
+  "Xử Nữ": "Bạn mạnh ở khả năng nhìn lỗi, sửa hệ thống và làm việc có chuẩn. Đừng để sự cầu toàn làm chậm quyết định vốn đã đủ dữ kiện.",
+  "Thiên Bình": "Bạn có duyên hòa giải, biết nhìn hai phía và tạo cảm giác dễ chịu. Bài học là đừng vì giữ hòa khí mà trì hoãn một lời nói thật cần thiết.",
+  "Bọ Cạp": "Bạn có nội lực sâu, càng khó càng muốn hiểu tận gốc. Khi biết buông kiểm soát, bạn sẽ thấy nhẹ hơn và quyết định sáng hơn.",
+  "Nhân Mã": "Bạn có tầm nhìn rộng, hợp học hỏi, di chuyển và mở hướng mới. Vận tốt đến khi sự tự do đi cùng kỷ luật, không phải đi cùng bốc đồng.",
+  "Ma Kết": "Bạn có ý chí vững và chịu được đường dài. Điểm cần tránh là tự biến trách nhiệm thành gánh nặng, khiến bản thân khó nhận hỗ trợ.",
+  "Bảo Bình": "Bạn có tư duy khác biệt, thích cách làm mới và thường thấy lối ra khi người khác chỉ thấy khuôn cũ. Cần nối ý tưởng với hành động cụ thể để vận không chỉ nằm trên giấy.",
+  "Song Ngư": "Bạn có cảm nhận tinh tế và dễ chạm vào phần sâu của người khác. Khi có ranh giới rõ, lòng tốt của bạn trở thành sức mạnh thay vì sự hao tổn.",
+};
+
+const numerologyAdvice = {
+  1: "Số 1 thiên về độc lập, cần quyết đoán nhưng đừng tự ôm hết mọi việc.",
+  2: "Số 2 thiên về kết nối, hợp hợp tác và chữa lành hiểu lầm.",
+  3: "Số 3 thiên về biểu đạt, nên nói rõ ý tưởng và tránh lan man.",
+  4: "Số 4 thiên về kỷ luật, càng có quy trình càng dễ gặp may.",
+  5: "Số 5 thiên về thay đổi, hợp thử nghiệm nhưng cần kiểm soát rủi ro.",
+  6: "Số 6 thiên về trách nhiệm, nên cân bằng giữa chăm người và chăm mình.",
+  7: "Số 7 thiên về chiều sâu, hợp nghiên cứu, tĩnh tâm và nhìn lại.",
+  8: "Số 8 thiên về thành tựu, hợp thương lượng lợi ích và quản trị tiền bạc.",
+  9: "Số 9 thiên về bao dung, nên khép lại việc cũ để mở vận mới.",
+};
+
+function hashText(value) {
+  return [...value].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+}
+
+function pick(items, seed) {
+  return items[Math.abs(seed) % items.length];
+}
+
+function getZodiac(date) {
+  const marker = (date.getMonth() + 1) * 100 + date.getDate();
+  return zodiacData.find(([, end]) => marker <= end)[0];
+}
+
+function getLifePath(dateText) {
+  let value = dateText.replace(/\D/g, "").split("").reduce((sum, digit) => sum + Number(digit), 0);
+  while (value > 9) {
+    value = String(value).split("").reduce((sum, digit) => sum + Number(digit), 0);
+  }
+  return value || 1;
+}
+
+function getHourBranch(timeText) {
+  if (!timeText) {
+    return "Giờ sinh chưa rõ";
+  }
+
+  const hour = Number(timeText.split(":")[0]);
+  const branches = [
+    "Tý",
+    "Sửu",
+    "Sửu",
+    "Dần",
+    "Dần",
+    "Mão",
+    "Mão",
+    "Thìn",
+    "Thìn",
+    "Tỵ",
+    "Tỵ",
+    "Ngọ",
+    "Ngọ",
+    "Mùi",
+    "Mùi",
+    "Thân",
+    "Thân",
+    "Dậu",
+    "Dậu",
+    "Tuất",
+    "Tuất",
+    "Hợi",
+    "Hợi",
+    "Tý",
+  ];
+
+  return `Giờ ${branches[hour]}`;
+}
+
+function buildQuestionAdvice(question, palace, topicTitle) {
+  if (!question.trim()) {
+    return `Quẻ ${palace} không khuyên bạn đi nhanh. Quẻ này nghiêng về việc nhìn lại trật tự bên trong: điều gì đang thật sự quan trọng với ${topicTitle.toLowerCase()}, điều gì chỉ là tiếng ồn, và việc nào nếu làm xong sẽ khiến các việc còn lại nhẹ hơn.`;
+  }
+
+  return `Với câu hỏi riêng của bạn, quẻ ${palace} cho thấy vấn đề không nằm ở việc có nên làm hay không, mà nằm ở thời điểm, cách nói và mức độ chuẩn bị. Hãy tách câu hỏi thành ba lớp: điều đã chắc, điều đang sợ, và một hành động nhỏ có thể kiểm chứng trong hôm nay.`;
+}
+
+function buildDeepReading(data, reading, seed) {
+  const name = data.fullName.trim();
+  const topicName = reading.topic.title.toLowerCase();
+  const question = (data.question || "").trim();
+  const questionText = question
+    ? `Câu hỏi "${escapeHtml(question)}" cho thấy bạn đang cần một câu trả lời có tính định hướng hơn là một lời trấn an.`
+    : `Bạn chưa đặt câu hỏi riêng, vì vậy lá số được đọc theo vận tổng quan và chủ đề ${topicName}.`;
+  const tension = reading.clarity > reading.luck
+    ? "Bạn đang nhìn vấn đề khá rõ, nhưng vận may chưa mở hẳn. Nghĩa là không nên phó mặc cho thời thế; càng chuẩn bị kỹ, kết quả càng đổi."
+    : "May mắn đang nhỉnh hơn độ sáng rõ. Có cơ hội xuất hiện bất ngờ, nhưng nếu không đặt tiêu chí trước, bạn dễ chọn theo cảm xúc nhất thời.";
+  const actionStyle = reading.energy >= 80
+    ? "Năng lượng cao, hợp chủ động mở lời, chốt việc và nhận phần trách nhiệm rõ ràng."
+    : reading.energy >= 65
+      ? "Năng lượng vừa đủ, hợp tiến từng bước, không nên bung quá nhiều đầu việc cùng lúc."
+      : "Năng lượng đang cần giữ, hợp thu gọn lịch, nghỉ đúng lúc và tránh quyết định trong trạng thái mệt.";
+
+  return {
+    overview: `${name} mang tổ hợp ${reading.zodiac} - số chủ đạo ${reading.lifePath} - hành ${reading.element}. Tổ hợp này cho thấy bên ngoài bạn có xu hướng xử lý việc bằng ${reading.zodiac === "Bảo Bình" ? "ý tưởng và góc nhìn khác biệt" : "trực giác pha lý trí"}, còn bên trong lại cần một điểm tựa rõ ràng trước khi thật sự yên tâm. ${zodiacAdvice[reading.zodiac]}`,
+    hiddenPattern: `Điểm sâu của quẻ ${reading.palace} là bài học về nhịp độ. Khi nóng lòng, bạn dễ muốn tìm một dấu hiệu chắc chắn ngay; nhưng vận hiện tại lại mở theo kiểu "rõ dần qua hành động". ${elementAdvice[reading.element]} ${numerologyAdvice[reading.lifePath]}`,
+    currentFlow: `${questionText} ${tension} ${actionStyle}`,
+    topicFocus: buildTopicFocus(data.topic, reading),
+    advice: buildQuestionAdvice(data.question || "", reading.palace, reading.topic.title),
+    timeline: buildTimeline(seed, reading),
+  };
+}
+
+function buildTopicFocus(topic, reading) {
+  const map = {
+    "tong-quan": `Trong tổng quan, lá số nhấn vào việc phân biệt việc thật sự tạo kết quả với việc chỉ làm bạn bận. Ba ngày tới nên dọn một điểm nghẽn cũ, sau đó mới mở kế hoạch mới. Nếu phải chọn, hãy chọn việc làm rõ trách nhiệm và dòng tiền.`,
+    "tinh-duyen": `Trong tình duyên, trọng tâm không phải ai đúng ai sai mà là cảm giác an toàn khi nói thật. Nếu đang có người trong lòng, hãy quan sát cách họ phản hồi khi bạn nói nhu cầu của mình. Nếu còn độc thân, vận tốt đến từ kết nối tự nhiên, không ép nhịp.`,
+    "su-nghiep": `Trong sự nghiệp, quẻ cho thấy bạn đang ở đoạn cần chứng minh bằng kết quả cụ thể. Đừng ôm hình ảnh "phải giỏi mọi thứ"; hãy chọn một mảng có thể tạo dấu ấn rõ nhất. Người có kinh nghiệm sẽ giúp bạn nếu bạn hỏi bằng dữ kiện, không hỏi quá chung.`,
+    "tai-loc": `Trong tài lộc, lá số không báo vận tiền lớn kiểu may rủi, mà báo vận chỉnh lại cách giữ tiền. Cơ hội tăng thu nằm ở việc biến kỹ năng sẵn có thành đề nghị rõ ràng: ai cần, giá trị gì, nhận kết quả khi nào.`,
+  };
+
+  return `${map[topic] || map["tong-quan"]} Với điểm sáng rõ ${reading.clarity}/100, điều cần nhất là viết ra tiêu chí trước khi quyết.`;
+}
+
+function buildTimeline(seed, reading) {
+  const first = [
+    "đừng vội trả lời ngay; hãy gom đủ thông tin còn thiếu.",
+    "nên hoàn tất một việc nhỏ đã hứa, vì nó mở lại niềm tin.",
+    "tránh tranh luận khi cảm xúc đang cao; nói chậm sẽ có lợi hơn.",
+  ];
+  const second = [
+    "một tín hiệu tốt đến từ người từng biết năng lực của bạn.",
+    "có cơ hội sửa sai hoặc nói lại cho rõ một chuyện cũ.",
+    "nên kiểm tra giấy tờ, tiền bạc hoặc lịch hẹn trước khi chốt.",
+  ];
+  const third = [
+    "hợp ra quyết định nếu bạn đã có ít nhất hai phương án dự phòng.",
+    "hợp mở lời hợp tác, đặt lịch hẹn hoặc đưa ra đề nghị cụ thể.",
+    "nên nghỉ và hồi phục, vì vận tốt cần thân tâm đủ ổn để nhận.",
+  ];
+
+  return [
+    { label: "1-2 ngày", text: pick(first, seed) },
+    { label: "3-5 ngày", text: pick(second, seed + reading.lifePath) },
+    { label: "6-7 ngày", text: pick(third, seed + reading.energy) },
+  ];
+}
+
+function createReading(data) {
+  const birthDate = new Date(`${data.birthDate}T12:00:00`);
+  const seed = hashText(`${data.fullName}${data.birthDate}${data.birthTime}${data.gender}${data.topic}`);
+  const topic = topicCopy[data.topic] || topicCopy["tong-quan"];
+  const zodiac = getZodiac(birthDate);
+  const lifePath = getLifePath(data.birthDate);
+  const element = elementsByMonth[birthDate.getMonth()];
+  const hourBranch = getHourBranch(data.birthTime);
+  const palace = pick(palaces, seed + lifePath);
+  const energy = Math.min(99, 55 + ((seed + lifePath) % 41));
+  const clarity = Math.min(99, 52 + ((seed * 3 + birthDate.getDate()) % 43));
+  const luck = Math.min(99, 50 + ((seed * 7 + birthDate.getMonth()) % 45));
+  const personalLine = buildQuestionAdvice(data.question || "", palace, topic.title);
+  const baseReading = {
+    topic,
+    zodiac,
+    lifePath,
+    element,
+    hourBranch,
+    palace,
+    energy,
+    clarity,
+    luck,
+    personalLine,
+    insights: [
+      zodiacAdvice[zodiac],
+      numerologyAdvice[lifePath],
+      elementAdvice[element],
+      ...topic.lines,
+    ],
+    summary: `${data.fullName.trim()} gặp quẻ ${palace}, cung ${zodiac}, số chủ đạo ${lifePath}, năng lượng ${energy}/100.`,
+  };
+
+  return {
+    ...baseReading,
+    deep: buildDeepReading(data, baseReading, seed),
+  };
+}
+
+function renderReading(data, reading) {
+  latestConsultText = buildConsultText(data, reading);
+
+  resultCard.innerHTML = `
+    <p class="eyebrow">Kết quả ${reading.topic.title}</p>
+    <h2>${escapeHtml(data.fullName.trim())} gặp quẻ ${reading.palace}</h2>
+    <p>${reading.personalLine}</p>
+    <div class="destiny-grid">
+      <div class="destiny-item"><span>Cung</span><strong>${reading.zodiac}</strong></div>
+      <div class="destiny-item"><span>Số chủ đạo</span><strong>${reading.lifePath}</strong></div>
+      <div class="destiny-item"><span>Ngũ hành</span><strong>${reading.element}</strong></div>
+      <div class="destiny-item"><span>Giờ sinh</span><strong>${reading.hourBranch}</strong></div>
+    </div>
+    <div class="score-row">
+      <div class="score"><span>Năng lượng</span><strong>${reading.energy}</strong></div>
+      <div class="score"><span>Sáng rõ</span><strong>${reading.clarity}</strong></div>
+      <div class="score"><span>May mắn</span><strong>${reading.luck}</strong></div>
+    </div>
+    <section class="reading-section">
+      <h3>Chân dung bản mệnh</h3>
+      <p>${reading.deep.overview}</p>
+    </section>
+    <section class="reading-section">
+      <h3>Mẫu vận đang lặp lại</h3>
+      <p>${reading.deep.hiddenPattern}</p>
+    </section>
+    <section class="reading-section">
+      <h3>Vận hiện tại</h3>
+      <p>${reading.deep.currentFlow}</p>
+    </section>
+    <section class="reading-section">
+      <h3>Luận theo chủ đề</h3>
+      <p>${reading.deep.topicFocus}</p>
+    </section>
+    <section class="reading-section">
+      <h3>Hướng xử lý</h3>
+      <p>${reading.deep.advice}</p>
+    </section>
+    <section class="reading-section">
+      <h3>Mốc 7 ngày tới</h3>
+      <div class="timeline">
+        ${reading.deep.timeline
+          .map((item) => `<div class="timeline-item"><strong>${item.label}</strong><span>${item.text}</span></div>`)
+          .join("")}
+      </div>
+    </section>
+    <div class="consult-actions">
+      <button class="primary-button" id="sendConsultMessage" type="button">Gửi thông số qua Facebook</button>
+      <button class="secondary-button" id="copyConsultMessage" type="button">Copy thông số</button>
+    </div>
+    <div class="consult-note">
+      Bước tiếp theo: bấm “Gửi thông số qua Facebook”, web sẽ copy toàn bộ lá số và mở Facebook của thầy.
+      Khi Facebook mở ra, hãy dán nội dung vào khung chat hoặc bình luận rồi gửi.
+    </div>
+    <div class="share-preview">${escapeHtml(reading.summary)}</div>
+  `;
+
+  document.querySelector("#sendConsultMessage").addEventListener("click", sendConsultToMessenger);
+  document.querySelector("#copyConsultMessage").addEventListener("click", copyConsultText);
+}
+
+function buildConsultText(data, reading) {
+  const question = (data.question || "").trim() || "Chưa nhập câu hỏi riêng";
+  return [
+    "Em muốn tư vấn theo lá số này:",
+    "",
+    `Họ tên: ${data.fullName.trim()}`,
+    `Ngày sinh: ${data.birthDate}`,
+    `Giờ sinh: ${data.birthTime || "Chưa rõ"}`,
+    `Giới tính: ${data.gender}`,
+    `Chủ đề: ${reading.topic.title}`,
+    `Câu hỏi: ${question}`,
+    "",
+    `Quẻ: ${reading.palace}`,
+    `Cung hoàng đạo: ${reading.zodiac}`,
+    `Số chủ đạo: ${reading.lifePath}`,
+    `Ngũ hành: ${reading.element}`,
+    `Giờ sinh luận: ${reading.hourBranch}`,
+    `Năng lượng: ${reading.energy}/100`,
+    `Sáng rõ: ${reading.clarity}/100`,
+    `May mắn: ${reading.luck}/100`,
+    "",
+    "Tóm tắt luận giải:",
+    reading.deep.currentFlow,
+    reading.deep.topicFocus,
+  ].join("\n");
+}
+
+async function copyConsultText() {
+  if (!latestConsultText) {
+    alert("Bạn hãy xem kết quả trước, sau đó mới gửi thông số tư vấn.");
+    return false;
+  }
+
+  try {
+    await navigator.clipboard.writeText(latestConsultText);
+    alert("Đã copy thông số. Khi Facebook mở ra, hãy dán vào khung chat hoặc bình luận và gửi.");
+    return true;
+  } catch (error) {
+    window.prompt("Copy thông số này rồi dán vào Facebook:", latestConsultText);
+    return false;
+  }
+}
+
+async function sendConsultToMessenger() {
+  await copyConsultText();
+  window.open(CUSTOMER_CONTACT_URL, "facebook-consult");
+}
+
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, (char) => {
+    const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" };
+    return entities[char];
+  });
+}
+
+function shareOnFacebook() {
+  const url = encodeURIComponent(window.location.href);
+  const quote = encodeURIComponent(latestShareText);
+
+  if (window.FB && FACEBOOK_APP_ID !== "YOUR_FACEBOOK_APP_ID") {
+    window.FB.ui({ method: "share", href: window.location.href, quote });
+    return;
+  }
+
+  window.open(
+    `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${quote}`,
+    "facebook-share",
+    "width=640,height=520"
+  );
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const data = Object.fromEntries(new FormData(form).entries());
+  const reading = createReading(data);
+  latestShareText = reading.summary;
+  renderReading(data, reading);
+  resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+shareTop.addEventListener("click", shareOnFacebook);
+shareResult.addEventListener("click", shareOnFacebook);
+
+facebookLogin.addEventListener("click", () => {
+  window.open(CUSTOMER_CONTACT_URL, "facebook-profile");
+});
