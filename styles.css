@@ -333,6 +333,15 @@ textarea:focus {
   margin-top: 14px;
 }
 
+.tarot-spread-1 {
+  grid-template-columns: minmax(220px, 360px);
+}
+
+.tarot-spread-5,
+.tarot-spread-7 {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 .tarot-card {
   min-height: 190px;
   border: 1px solid rgba(245, 219, 169, 0.18);

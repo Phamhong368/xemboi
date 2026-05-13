@@ -48,6 +48,24 @@
           </div>
 
           <label>
+            Kiểu xem
+            <select name="readingType" id="readingType">
+              <option value="tu-vi">Tử vi</option>
+              <option value="tarot">Tarot</option>
+            </select>
+          </label>
+
+          <label class="tarot-count-field" id="tarotCountField" hidden>
+            Số lá tarot
+            <select name="tarotCount" id="tarotCount">
+              <option value="1">1 lá - thông điệp nhanh</option>
+              <option value="3" selected>3 lá - quá khứ, hiện tại, lời khuyên</option>
+              <option value="5">5 lá - phân tích sâu</option>
+              <option value="7">7 lá - trải bài đầy đủ</option>
+            </select>
+          </label>
+
+          <label>
             Họ tên
             <input name="fullName" autocomplete="name" placeholder="Nguyễn Văn A" required />
           </label>
@@ -154,8 +172,7 @@
           <p class="eyebrow">Kết quả</p>
           <h2>Lá số của bạn sẽ hiện ở đây</h2>
           <p>
-            Sau khi gieo quẻ, hệ thống sẽ tạo thông điệp tổng quan kèm cung hoàng đạo,
-            số chủ đạo, ngũ hành và nút gửi thông số sang Facebook để tư vấn tiếp.
+            Chọn tử vi để xem lá số theo ngày sinh, hoặc chọn tarot để rút bài theo câu hỏi.
           </p>
         </article>
 

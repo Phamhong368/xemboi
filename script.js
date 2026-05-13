@@ -15,6 +15,9 @@ const profileLink = document.querySelector("#profileLink");
 const businessInboxLink = document.querySelector("#businessInboxLink");
 const messengerTop = document.querySelector("#messengerTop");
 const floatingMessenger = document.querySelector("#floatingMessenger");
+const readingType = document.querySelector("#readingType");
+const tarotCountField = document.querySelector("#tarotCountField");
+const tarotCount = document.querySelector("#tarotCount");
 const readingMode = document.querySelector("#readingMode");
 const partnerFields = document.querySelector("#partnerFields");
 const topicSelect = document.querySelector("#topicSelect");
@@ -33,6 +36,12 @@ profileLink.href = FACEBOOK_PROFILE_URL;
 businessInboxLink.href = BUSINESS_INBOX_URL;
 messengerTop.href = CUSTOMER_CONTACT_URL;
 floatingMessenger.href = CUSTOMER_CONTACT_URL;
+
+readingType.addEventListener("change", () => {
+  const isTarot = readingType.value === "tarot";
+  tarotCountField.hidden = !isTarot;
+  updateDeepQuestionPrompts();
+});
 
 const deepQuestionSuggestions = {
   "tong-quan": [
@@ -60,10 +69,15 @@ const deepQuestionSuggestions = {
     "Điểm lệch lớn nhất giữa em và người ấy là gì?",
     "Em nên làm gì để mối quan hệ rõ ràng hơn trong 7 ngày tới?",
   ],
+  tarot: [
+    "Tôi cần nhìn rõ điều gì trong tình huống này?",
+    "Năng lượng hiện tại đang nghiêng về hướng nào?",
+    "Lá bài khuyên tôi nên hành động ra sao?",
+  ],
 };
 
 function updateDeepQuestionPrompts() {
-  const key = readingMode.value === "couple" ? "couple" : topicSelect.value;
+  const key = readingType.value === "tarot" ? "tarot" : readingMode.value === "couple" ? "couple" : topicSelect.value;
   const suggestions = deepQuestionSuggestions[key] || deepQuestionSuggestions["tong-quan"];
   questionHint.textContent = `Gợi ý: ${suggestions.join(" · ")}`;
   deepQuestionFields.forEach((field, index) => {
@@ -324,17 +338,24 @@ function buildDeepReading(data, reading, seed) {
     topicFocus: buildTopicFocus(data.topic, reading),
     advice: buildQuestionAdvice(data.question || "", reading.palace, reading.topic.title),
     timeline: buildTimeline(seed, reading),
-    deepAnswers: buildDeepAnswers(data, reading, seed),
+    deepAnswers: data.readingType === "tu-vi" ? buildDeepAnswers(data, reading, seed) : [],
     couple: buildCoupleReading(data, reading, seed),
     tarot: buildTarotSpread(data, reading, seed),
   };
 }
 
 function buildTarotSpread(data, reading, seed) {
-  const positions =
-    data.readingMode === "couple"
-      ? ["Năng lượng của bạn", "Năng lượng người ấy", "Hướng đi của mối quan hệ"]
-      : ["Gốc vấn đề", "Điều cần nhìn rõ", "Lời khuyên"];
+  const count = Number(data.tarotCount || 3);
+  const positionSets = {
+    1: ["Thông điệp chính"],
+    3:
+      data.readingMode === "couple"
+        ? ["Năng lượng của bạn", "Năng lượng người ấy", "Hướng đi của mối quan hệ"]
+        : ["Gốc vấn đề", "Hiện tại", "Lời khuyên"],
+    5: ["Gốc vấn đề", "Điều đang hỗ trợ", "Điều đang cản trở", "Việc nên làm", "Kết quả gần"],
+    7: ["Hiện trạng", "Điều ẩn dưới bề mặt", "Bài học cũ", "Nỗi sợ", "Cơ hội", "Hành động nên làm", "Thông điệp cuối"],
+  };
+  const positions = positionSets[count] || positionSets[3];
   const used = new Set();
 
   return positions.map((position, index) => {
@@ -509,6 +530,7 @@ function createReading(data) {
   const personalLine = buildQuestionAdvice(data.question || "", palace, topic.title);
   const baseReading = {
     topic,
+    type: data.readingType || "tu-vi",
     zodiac,
     lifePath,
     element,
@@ -535,6 +557,10 @@ function createReading(data) {
 
 function renderReading(data, reading) {
   latestConsultText = buildConsultText(data, reading);
+  if (reading.type === "tarot") {
+    renderTarotReading(data, reading);
+    return;
+  }
   const coupleSection = reading.deep.couple
     ? `
     <section class="reading-section">
@@ -563,26 +589,6 @@ function renderReading(data, reading) {
       </div>
     </section>`
     : "";
-  const tarotSection = `
-    <section class="reading-section">
-      <h3>Trải bài tarot 3 lá</h3>
-      <p>Ba lá bài được rút theo năng lượng lá số, chủ đề và câu hỏi hiện tại.</p>
-      <div class="tarot-spread">
-        ${reading.deep.tarot
-          .map(
-            (card) => `
-              <div class="tarot-card">
-                <div class="tarot-symbol">${card.symbol}</div>
-                <span>${card.position}</span>
-                <strong>${card.vi} ${card.reversed ? "(ngược)" : "(xuôi)"}</strong>
-                <p>${card.meaning}. ${card.topicLine}</p>
-              </div>
-            `
-          )
-          .join("")}
-      </div>
-    </section>`;
-
   resultCard.innerHTML = `
     <p class="eyebrow">Kết quả ${reading.topic.title}</p>
     <h2>${escapeHtml(data.fullName.trim())} gặp quẻ ${reading.palace}</h2>
@@ -614,7 +620,6 @@ function renderReading(data, reading) {
       <h3>Luận theo chủ đề</h3>
       <p>${reading.deep.topicFocus}</p>
     </section>
-    ${tarotSection}
     ${coupleSection}
     ${deepQuestionSection}
     <section class="reading-section">
@@ -644,6 +649,58 @@ function renderReading(data, reading) {
   document.querySelector("#copyConsultMessage").addEventListener("click", copyConsultText);
 }
 
+function renderTarotReading(data, reading) {
+  resultCard.innerHTML = `
+    <p class="eyebrow">Kết quả Tarot</p>
+    <h2>Trải bài ${reading.deep.tarot.length} lá cho ${escapeHtml(data.fullName.trim())}</h2>
+    <p>${(data.question || "").trim() ? `Câu hỏi: ${escapeHtml(data.question.trim())}` : "Trải bài này đọc năng lượng hiện tại và lời khuyên hành động gần nhất."}</p>
+    <section class="reading-section">
+      <h3>Trải bài tarot</h3>
+      <div class="tarot-spread tarot-spread-${reading.deep.tarot.length}">
+        ${reading.deep.tarot
+          .map(
+            (card) => `
+              <div class="tarot-card">
+                <div class="tarot-symbol">${card.symbol}</div>
+                <span>${card.position}</span>
+                <strong>${card.vi} ${card.reversed ? "(ngược)" : "(xuôi)"}</strong>
+                <p>${card.meaning}. ${card.topicLine}</p>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    </section>
+    <section class="reading-section">
+      <h3>Tổng luận tarot</h3>
+      <p>${buildTarotSummary(data, reading)}</p>
+    </section>
+    <div class="consult-actions">
+      <button class="primary-button" id="sendConsultMessage" type="button">Gửi thông số qua Facebook</button>
+      <button class="secondary-button" id="copyConsultMessage" type="button">Copy thông số</button>
+    </div>
+    <div class="consult-note">
+      Nếu muốn luận sâu hơn từng lá, hãy gửi trải bài này qua Facebook để thầy đọc tiếp.
+    </div>
+    <div class="share-preview">${escapeHtml(reading.summary)}</div>
+  `;
+
+  document.querySelector("#sendConsultMessage").addEventListener("click", sendConsultToMessenger);
+  document.querySelector("#copyConsultMessage").addEventListener("click", copyConsultText);
+}
+
+function buildTarotSummary(data, reading) {
+  const reversedCount = reading.deep.tarot.filter((card) => card.reversed).length;
+  const tempo = reversedCount > reading.deep.tarot.length / 2
+    ? "Trải bài có nhiều lá ngược, nên năng lượng hiện tại chưa thuận để ép kết quả. Việc đúng hơn là sửa điểm nghẽn trước."
+    : "Trải bài có nhiều lá xuôi, cho thấy tình huống có thể tiến triển nếu bạn hành động rõ ràng và đúng nhịp.";
+  const focus = data.readingMode === "couple"
+    ? "Trong chuyện tình cảm, hãy nhìn vào sự nhất quán và khả năng cùng sửa sai sau va chạm."
+    : "Điểm quan trọng là chọn một hành động cụ thể, không chỉ chờ thêm dấu hiệu.";
+
+  return `${tempo} ${focus}`;
+}
+
 function buildConsultText(data, reading) {
   const question = (data.question || "").trim() || "Chưa nhập câu hỏi riêng";
   const deepQuestions = [data.deepQuestion1, data.deepQuestion2, data.deepQuestion3]
@@ -664,7 +721,8 @@ function buildConsultText(data, reading) {
   return [
     "Em muốn tư vấn theo lá số này:",
     "",
-    `Kiểu xem: ${data.readingMode === "couple" ? "Mình và người yêu" : "Bản thân"}`,
+    `Kiểu xem: ${data.readingType === "tarot" ? "Tarot" : "Tử vi"}`,
+    `Phạm vi: ${data.readingMode === "couple" ? "Mình và người yêu" : "Bản thân"}`,
     `Họ tên: ${data.fullName.trim()}`,
     `Ngày sinh: ${data.birthDate}`,
     `Giờ sinh: ${data.birthTime || "Chưa rõ"}`,
@@ -684,9 +742,9 @@ function buildConsultText(data, reading) {
     `May mắn: ${reading.luck}/100`,
     "",
     "Tóm tắt luận giải:",
-    reading.deep.currentFlow,
-    reading.deep.topicFocus,
-    "Tarot:",
+    reading.type === "tu-vi" ? reading.deep.currentFlow : buildTarotSummary(data, reading),
+    reading.type === "tu-vi" ? reading.deep.topicFocus : "",
+    reading.type === "tarot" ? "Tarot:" : "",
     ...reading.deep.tarot.map((card) => `${card.position}: ${card.vi} ${card.reversed ? "(ngược)" : "(xuôi)"} - ${card.meaning}`),
     reading.deep.couple ? reading.deep.couple.summary : "",
   ].join("\n");
