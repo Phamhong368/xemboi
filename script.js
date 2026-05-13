@@ -404,13 +404,17 @@ function buildTarotSpreadFromSelection(data, selectedIndexes) {
   return selectedIndexes.map((cardIndex, index) => {
     const card = tarotDeck[cardIndex];
     const reversed = (seed + cardIndex + index) % 4 === 0;
-    return {
+    const selectedCard = {
       ...card,
       position: positions[index],
       reversed,
       meaning: reversed ? card.reversed : card.upright,
       visual: getTarotVisual(card),
-      topicLine: getTarotTopicLine(data, { topic: { title: "Tarot" } }, card, reversed, index),
+    };
+
+    return {
+      ...selectedCard,
+      topicLine: getTarotTopicLine(data, { topic: { title: "Tarot" } }, selectedCard, reversed, index),
     };
   });
 }
