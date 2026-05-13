@@ -328,8 +328,8 @@ textarea:focus {
 
 .tarot-spread {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
   margin-top: 14px;
 }
 
@@ -398,20 +398,90 @@ textarea:focus {
     linear-gradient(160deg, rgba(25, 31, 66, 0.9), rgba(18, 12, 20, 0.94));
 }
 
-.tarot-symbol {
+.tarot-art {
   display: grid;
-  width: 54px;
-  height: 74px;
   place-items: center;
+  aspect-ratio: 3 / 4;
+  max-height: 220px;
   margin-bottom: 12px;
-  border: 1px solid rgba(240, 200, 108, 0.42);
+  overflow: hidden;
+  border: 1px solid rgba(240, 200, 108, 0.36);
   border-radius: 8px;
-  color: var(--gold-strong);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.45rem;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255, 226, 154, 0.32), transparent 24%),
+    radial-gradient(circle at 48% 72%, rgba(255, 255, 255, 0.08), transparent 36%),
+    linear-gradient(160deg, rgba(20, 28, 69, 0.96), rgba(18, 12, 20, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 245, 221, 0.06);
 }
 
-.tarot-card span {
+.tarot-art-frame {
+  display: grid;
+  width: 72%;
+  height: 82%;
+  place-items: center;
+  border: 1px solid rgba(240, 200, 108, 0.48);
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.04), transparent),
+    rgba(8, 8, 14, 0.28);
+  color: var(--gold-strong);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.tarot-art-frame span,
+.tarot-art-frame em {
+  color: rgba(255, 242, 213, 0.7);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tarot-art-frame strong {
+  margin: 0;
+  color: var(--gold-strong);
+  font-size: clamp(2.6rem, 9vw, 4.4rem);
+  line-height: 1;
+}
+
+.tarot-art-major {
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255, 226, 154, 0.36), transparent 24%),
+    linear-gradient(160deg, rgba(30, 30, 72, 0.98), rgba(22, 10, 35, 0.98));
+}
+
+.tarot-art-cups {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(133, 203, 255, 0.28), transparent 25%),
+    linear-gradient(160deg, rgba(18, 49, 83, 0.96), rgba(12, 15, 42, 0.98));
+}
+
+.tarot-art-wands {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 191, 93, 0.32), transparent 25%),
+    linear-gradient(160deg, rgba(89, 37, 26, 0.96), rgba(24, 11, 22, 0.98));
+}
+
+.tarot-art-swords {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(212, 232, 255, 0.3), transparent 25%),
+    linear-gradient(160deg, rgba(38, 54, 76, 0.96), rgba(13, 17, 28, 0.98));
+}
+
+.tarot-art-pentacles {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(173, 219, 132, 0.28), transparent 25%),
+    linear-gradient(160deg, rgba(35, 75, 54, 0.96), rgba(17, 19, 12, 0.98));
+}
+
+.tarot-card.is-reversed .tarot-art {
+  border-style: dashed;
+  filter: saturate(0.86);
+}
+
+.tarot-card > span {
   display: block;
   color: var(--muted);
   font-size: 0.78rem;
@@ -420,7 +490,7 @@ textarea:focus {
   letter-spacing: 0.06em;
 }
 
-.tarot-card strong {
+.tarot-card > strong {
   display: block;
   margin: 4px 0 8px;
   color: #fff2d5;
@@ -430,6 +500,12 @@ textarea:focus {
 .tarot-card p {
   font-size: 0.9rem;
   line-height: 1.55;
+}
+
+.tarot-card .tarot-meaning {
+  margin-bottom: 8px;
+  color: var(--gold-strong);
+  font-weight: 900;
 }
 
 .deep-list {

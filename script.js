@@ -409,29 +409,88 @@ function buildTarotSpreadFromSelection(data, selectedIndexes) {
       position: positions[index],
       reversed,
       meaning: reversed ? card.reversed : card.upright,
+      visual: getTarotVisual(card),
       topicLine: getTarotTopicLine(data, { topic: { title: "Tarot" } }, card, reversed, index),
     };
   });
 }
 
 function getTarotTopicLine(data, reading, card, reversed, index) {
+  const question = (data.question || "").trim();
+  const topicName = {
+    "tong-quan": "tổng quan",
+    "tinh-duyen": "tình cảm",
+    "su-nghiep": "công việc",
+    "tai-loc": "tài lộc",
+  }[data.topic] || "vấn đề bạn đang hỏi";
+  const cardTone = reversed
+    ? "đang bị nghẽn, dễ lặp lại kiểu phản ứng cũ nếu bạn nóng ruột"
+    : "đang mở, nhưng chỉ rõ khi bạn chọn một hướng hành động cụ thể";
+
   if (data.readingMode === "couple") {
     const lines = [
-      "Lá này cho thấy cách bạn đang bước vào mối quan hệ: phần muốn gần hơn và phần vẫn cần được an toàn.",
-      "Lá này phản ánh điều người ấy có thể đang mang trong lòng, không nên chỉ nhìn qua lời nói bên ngoài.",
-      "Lời nhắn là hãy để hành động đều đặn trả lời cho cảm xúc, thay vì ép một cam kết quá nhanh.",
+      `Gốc của mối liên kết nằm ở ${card.meaning}; có phần muốn gần hơn nhưng vẫn cần cảm giác an toàn.`,
+      `Hiện tại cho thấy ${card.meaning}; đừng chỉ nghe lời nói, hãy nhìn nhịp phản hồi và việc người ấy có giữ lời không.`,
+      `Lời khuyên là ${card.meaning}; hãy nói rõ nhu cầu, rồi quan sát hành động đều đặn thay vì ép cam kết ngay.`,
     ];
     return lines[index];
   }
 
-  const topicLines = {
-    "tong-quan": "Lá này nhắc bạn chọn một việc trọng tâm, vì vận hiện tại mở qua sự rõ ràng chứ không qua ôm đồm.",
-    "tinh-duyen": "Trong tình cảm, lá này khuyên nhìn vào mức độ an toàn và sự nhất quán hơn là cảm xúc nhất thời.",
-    "su-nghiep": "Trong công việc, lá này chỉ ra việc cần biến năng lực thành kết quả cụ thể, có người nhìn thấy được.",
-    "tai-loc": "Trong tài lộc, lá này nhắc kiểm tra dòng tiền và tránh quyết định vì cảm xúc hoặc sĩ diện.",
-  };
+  const lines = [
+    `Gốc vấn đề trong ${topicName} là ${card.meaning}. Lá này nói rằng điều bạn hỏi ${question ? `"${question}" ` : ""}${cardTone}.`,
+    `Hiện tại đang vận hành qua ${card.meaning}. Điểm cần nhìn kỹ là bạn đang phản ứng theo cảm xúc, hay thật sự chọn điều có lợi về lâu dài.`,
+    `Lời khuyên của lá này là ${card.meaning}. Việc nên làm trong 24-48 giờ tới là chốt một bước nhỏ, đo được, rồi mới quyết định bước lớn hơn.`,
+  ];
 
-  return `${topicLines[data.topic] || topicLines["tong-quan"]} ${reversed ? "Vì lá ở thế ngược, hãy chậm lại để sửa nền trước khi tiến." : "Vì lá ở thế xuôi, có thể chủ động bước tiếp nhưng cần giữ nhịp ổn định."}`;
+  return lines[index];
+}
+
+function getTarotVisual(card) {
+  const majorIcons = {
+    "Kẻ Khờ": "☉",
+    "Pháp Sư": "✦",
+    "Nữ Tư Tế": "☾",
+    "Hoàng Hậu": "✿",
+    "Hoàng Đế": "♜",
+    "Giáo Hoàng": "⚜",
+    "Tình Nhân": "♡",
+    "Cỗ Xe": "◆",
+    "Sức Mạnh": "♌",
+    "Ẩn Sĩ": "♢",
+    "Bánh Xe Số Phận": "◎",
+    "Công Lý": "⚖",
+    "Người Treo Ngược": "▽",
+    "Cái Chết": "✧",
+    "Tiết Độ": "☯",
+    "Ác Quỷ": "♆",
+    "Tòa Tháp": "▥",
+    "Ngôi Sao": "✶",
+    "Mặt Trăng": "☾",
+    "Mặt Trời": "☀",
+    "Phán Xét": "✺",
+    "Thế Giới": "⊕",
+  };
+  const suits = [
+    { key: "Cốc", className: "cups", icon: "∪", label: "Nước" },
+    { key: "Gậy", className: "wands", icon: "✦", label: "Lửa" },
+    { key: "Kiếm", className: "swords", icon: "⚔", label: "Khí" },
+    { key: "Tiền", className: "pentacles", icon: "✪", label: "Đất" },
+  ];
+  const suit = suits.find((item) => card.vi.includes(item.key));
+
+  if (suit) {
+    return {
+      family: suit.className,
+      icon: suit.icon,
+      label: suit.label,
+    };
+  }
+
+  return {
+    family: "major",
+    icon: majorIcons[card.vi] || card.symbol,
+    label: "Ẩn chính",
+  };
 }
 
 function buildDeepAnswers(data, reading, seed) {
@@ -733,11 +792,18 @@ function renderTarotReading(data, reading) {
         ${reading.deep.tarot
           .map(
             (card) => `
-              <div class="tarot-card">
-                <div class="tarot-symbol">${card.symbol}</div>
+              <div class="tarot-card ${card.reversed ? "is-reversed" : ""}">
+                <div class="tarot-art tarot-art-${card.visual.family}">
+                  <div class="tarot-art-frame">
+                    <span>${card.symbol}</span>
+                    <strong>${card.visual.icon}</strong>
+                    <em>${card.visual.label}</em>
+                  </div>
+                </div>
                 <span>${card.position}</span>
                 <strong>${card.vi} ${card.reversed ? "(ngược)" : "(xuôi)"}</strong>
-                <p>${card.meaning}. ${card.topicLine}</p>
+                <p class="tarot-meaning">${card.meaning}</p>
+                <p>${card.topicLine}</p>
               </div>
             `
           )
@@ -746,7 +812,7 @@ function renderTarotReading(data, reading) {
     </section>
     <section class="reading-section">
       <h3>Tổng luận tarot</h3>
-      <p>${buildTarotSummary(data, reading)}</p>
+      <p>${escapeHtml(buildTarotSummary(data, reading))}</p>
     </section>
     ${followUpSection}
     <div class="consult-actions">
@@ -901,15 +967,22 @@ function attachFollowUpHandlers() {
 }
 
 function buildTarotSummary(data, reading) {
+  const [root, current, advice] = reading.deep.tarot;
   const reversedCount = reading.deep.tarot.filter((card) => card.reversed).length;
-  const tempo = reversedCount > reading.deep.tarot.length / 2
-    ? "Trải bài có nhiều lá ngược, nên năng lượng hiện tại chưa thuận để ép kết quả. Việc đúng hơn là sửa điểm nghẽn trước."
-    : "Trải bài có nhiều lá xuôi, cho thấy tình huống có thể tiến triển nếu bạn hành động rõ ràng và đúng nhịp.";
-  const focus = data.readingMode === "couple"
-    ? "Trong chuyện tình cảm, hãy nhìn vào sự nhất quán và khả năng cùng sửa sai sau va chạm."
-    : "Điểm quan trọng là chọn một hành động cụ thể, không chỉ chờ thêm dấu hiệu.";
+  const question = (data.question || "").trim();
+  const opening = question
+    ? `Với câu hỏi "${question}", ba lá đang kể một mạch khá rõ:`
+    : "Ba lá đang kể một mạch khá rõ:";
+  const tempo = reversedCount >= 2
+    ? "Có nhiều lá ngược nên trọng tâm không phải là ép kết quả ngay, mà là tháo nút nghẽn trước khi đi tiếp."
+    : reversedCount === 1
+      ? "Chỉ có một lá ngược, nghĩa là tình huống vẫn có cửa mở nhưng còn một điểm lệch cần chỉnh."
+      : "Cả ba lá đều xuôi, năng lượng tương đối thuận nếu bạn hành động rõ và không đổi ý liên tục.";
+  const topicFocus = data.readingMode === "couple"
+    ? "Nếu hỏi về một người, hãy đo bằng sự nhất quán, tốc độ phản hồi và khả năng sửa sai sau va chạm."
+    : "Cách đi đúng là chọn một việc nhỏ nhưng có thể kiểm chứng, làm xong rồi mới đọc tiếp tín hiệu.";
 
-  return `${tempo} ${focus}`;
+  return `${opening} ${root.position} là ${root.vi}, chỉ ra nền của chuyện này nằm ở ${root.meaning}. ${current.position} là ${current.vi}, cho thấy hiện tại đang chịu ảnh hưởng bởi ${current.meaning}. ${advice.position} là ${advice.vi}, nên lời khuyên không phải chờ may mắn mà là ${advice.meaning}. ${tempo} ${topicFocus}`;
 }
 
 function buildConsultText(data, reading) {
