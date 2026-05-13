@@ -22,6 +22,7 @@ const readingMode = document.querySelector("#readingMode");
 const partnerFields = document.querySelector("#partnerFields");
 const topicSelect = document.querySelector("#topicSelect");
 const questionHint = document.querySelector("#questionHint");
+const astrologyFields = document.querySelectorAll(".astrology-field");
 const deepQuestionFields = [
   form.elements.deepQuestion1,
   form.elements.deepQuestion2,
@@ -40,6 +41,15 @@ floatingMessenger.href = CUSTOMER_CONTACT_URL;
 readingType.addEventListener("change", () => {
   const isTarot = readingType.value === "tarot";
   tarotCountField.hidden = !isTarot;
+  for (const field of astrologyFields) {
+    field.hidden = isTarot;
+  }
+  form.elements.fullName.required = !isTarot;
+  form.elements.birthDate.required = !isTarot;
+  partnerFields.hidden = isTarot || readingMode.value !== "couple";
+  for (const field of partnerFields.querySelectorAll("input")) {
+    field.required = !isTarot && readingMode.value === "couple" && field.name !== "partnerBirthTime";
+  }
   updateDeepQuestionPrompts();
 });
 
@@ -561,6 +571,10 @@ function buildTimeline(seed, reading) {
 }
 
 function createReading(data) {
+  if (data.readingType === "tarot") {
+    return createTarotOnlyReading(data);
+  }
+
   const profile = buildPersonProfile(data.fullName, data.birthDate, data.birthTime);
   const birthDate = profile.birthDate;
   const seed = hashText(`${data.fullName}${data.birthDate}${data.birthTime}${data.gender}${data.topic}`);
@@ -598,6 +612,34 @@ function createReading(data) {
   return {
     ...baseReading,
     deep: buildDeepReading(data, baseReading, seed),
+  };
+}
+
+function createTarotOnlyReading(data) {
+  const questionSeed = data.question || `${Date.now()}`;
+  const seed = hashText(`${questionSeed}${data.deepQuestion1}${data.deepQuestion2}${data.deepQuestion3}`);
+  const baseReading = {
+    topic: { title: "Tarot" },
+    type: "tarot",
+    zodiac: "",
+    lifePath: 0,
+    element: "",
+    hourBranch: "",
+    palace: "Tarot",
+    energy: 0,
+    clarity: 0,
+    luck: 0,
+    personalLine: "",
+    summary: `Trải bài tarot 3 lá${data.question ? ` cho câu hỏi: ${data.question.trim()}` : ""}.`,
+  };
+
+  return {
+    ...baseReading,
+    deep: {
+      tarot: buildTarotSpread(data, baseReading, seed),
+      deepAnswers: [],
+      couple: null,
+    },
   };
 }
 
@@ -702,7 +744,7 @@ function renderTarotReading(data, reading) {
   const followUpSection = buildFollowUpSection(data, reading);
   resultCard.innerHTML = `
     <p class="eyebrow">Kết quả Tarot</p>
-    <h2>Trải bài ${reading.deep.tarot.length} lá cho ${escapeHtml(data.fullName.trim())}</h2>
+    <h2>Trải bài ${reading.deep.tarot.length} lá</h2>
     <p>${(data.question || "").trim() ? `Câu hỏi: ${escapeHtml(data.question.trim())}` : "Trải bài này đọc năng lượng hiện tại và lời khuyên hành động gần nhất."}</p>
     <section class="reading-section">
       <h3>Trải bài tarot</h3>
@@ -857,23 +899,23 @@ function buildConsultText(data, reading) {
     "",
     `Kiểu xem: ${data.readingType === "tarot" ? "Tarot" : "Tử vi"}`,
     `Phạm vi: ${data.readingMode === "couple" ? "Mình và người yêu" : "Bản thân"}`,
-    `Họ tên: ${data.fullName.trim()}`,
-    `Ngày sinh: ${data.birthDate}`,
-    `Giờ sinh: ${data.birthTime || "Chưa rõ"}`,
-    `Giới tính: ${data.gender}`,
+    data.readingType === "tarot" ? "" : `Họ tên: ${data.fullName.trim()}`,
+    data.readingType === "tarot" ? "" : `Ngày sinh: ${data.birthDate}`,
+    data.readingType === "tarot" ? "" : `Giờ sinh: ${data.birthTime || "Chưa rõ"}`,
+    data.readingType === "tarot" ? "" : `Giới tính: ${data.gender}`,
     `Chủ đề: ${reading.topic.title}`,
     `Câu hỏi: ${question}`,
     ...deepQuestions.map((item, index) => `Câu hỏi chuyên sâu ${index + 1}: ${item}`),
     ...partnerLines,
     "",
-    `Quẻ: ${reading.palace}`,
-    `Cung hoàng đạo: ${reading.zodiac}`,
-    `Số chủ đạo: ${reading.lifePath}`,
-    `Ngũ hành: ${reading.element}`,
-    `Giờ sinh luận: ${reading.hourBranch}`,
-    `Năng lượng: ${reading.energy}/100`,
-    `Sáng rõ: ${reading.clarity}/100`,
-    `May mắn: ${reading.luck}/100`,
+    reading.type === "tu-vi" ? `Quẻ: ${reading.palace}` : "",
+    reading.type === "tu-vi" ? `Cung hoàng đạo: ${reading.zodiac}` : "",
+    reading.type === "tu-vi" ? `Số chủ đạo: ${reading.lifePath}` : "",
+    reading.type === "tu-vi" ? `Ngũ hành: ${reading.element}` : "",
+    reading.type === "tu-vi" ? `Giờ sinh luận: ${reading.hourBranch}` : "",
+    reading.type === "tu-vi" ? `Năng lượng: ${reading.energy}/100` : "",
+    reading.type === "tu-vi" ? `Sáng rõ: ${reading.clarity}/100` : "",
+    reading.type === "tu-vi" ? `May mắn: ${reading.luck}/100` : "",
     "",
     "Tóm tắt luận giải:",
     reading.type === "tu-vi" ? reading.deep.currentFlow : buildTarotSummary(data, reading),
@@ -881,7 +923,7 @@ function buildConsultText(data, reading) {
     reading.type === "tarot" ? "Tarot:" : "",
     ...reading.deep.tarot.map((card) => `${card.position}: ${card.vi} ${card.reversed ? "(ngược)" : "(xuôi)"} - ${card.meaning}`),
     reading.deep.couple ? reading.deep.couple.summary : "",
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 }
 
 async function copyConsultText() {
