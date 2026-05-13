@@ -216,20 +216,66 @@ const numerologyAdvice = {
   9: "Số 9 thiên về bao dung, nên khép lại việc cũ để mở vận mới.",
 };
 
-const tarotDeck = [
-  { name: "The Fool", vi: "Kẻ Khờ", symbol: "0", upright: "khởi đầu mới, niềm tin và sự tự do", reversed: "vội vàng, thiếu chuẩn bị hoặc né trách nhiệm" },
-  { name: "The Magician", vi: "Nhà Ảo Thuật", symbol: "I", upright: "năng lực biến ý tưởng thành hành động", reversed: "tiềm năng chưa được dùng đúng cách" },
-  { name: "The High Priestess", vi: "Nữ Tư Tế", symbol: "II", upright: "trực giác, bí mật và điều chưa nói ra", reversed: "nhiễu cảm xúc, khó nghe tiếng lòng thật" },
-  { name: "The Empress", vi: "Hoàng Hậu", symbol: "III", upright: "nuôi dưỡng, phát triển và sức hút tự nhiên", reversed: "cho đi quá mức hoặc thiếu chăm sóc bản thân" },
-  { name: "The Emperor", vi: "Hoàng Đế", symbol: "IV", upright: "trật tự, ranh giới và quyết định rõ", reversed: "kiểm soát cứng hoặc thiếu nền tảng" },
-  { name: "The Lovers", vi: "Nhân Tình", symbol: "VI", upright: "lựa chọn từ trái tim và sự hòa hợp", reversed: "lệch giá trị, thiếu cam kết hoặc phân vân" },
-  { name: "The Chariot", vi: "Cỗ Xe", symbol: "VII", upright: "tiến lên, ý chí và kiểm soát hướng đi", reversed: "giằng co, mất hướng hoặc nóng vội" },
-  { name: "Strength", vi: "Sức Mạnh", symbol: "VIII", upright: "kiên nhẫn, mềm mà vững và nội lực", reversed: "mệt mỏi, tự nghi ngờ hoặc phản ứng quá mạnh" },
-  { name: "The Hermit", vi: "Ẩn Sĩ", symbol: "IX", upright: "chiêm nghiệm, tìm câu trả lời bên trong", reversed: "cô lập hoặc suy nghĩ quá lâu" },
-  { name: "Wheel of Fortune", vi: "Bánh Xe Số Phận", symbol: "X", upright: "chu kỳ mới, cơ hội và bước ngoặt", reversed: "kẹt vòng lặp cũ hoặc chống lại thay đổi" },
-  { name: "Justice", vi: "Công Lý", symbol: "XI", upright: "sự thật, cân bằng và nhân quả", reversed: "thiếu công bằng hoặc chưa dám đối diện sự thật" },
-  { name: "The Star", vi: "Ngôi Sao", symbol: "XVII", upright: "hy vọng, chữa lành và định hướng sáng", reversed: "mất niềm tin hoặc cần hồi phục thêm" },
+const majorArcana = [
+  ["The Fool", "Kẻ Khờ", "0", "khởi đầu mới, niềm tin và sự tự do", "vội vàng, thiếu chuẩn bị hoặc né trách nhiệm"],
+  ["The Magician", "Nhà Ảo Thuật", "I", "biến ý tưởng thành hành động", "tiềm năng chưa dùng đúng cách"],
+  ["The High Priestess", "Nữ Tư Tế", "II", "trực giác, bí mật và điều chưa nói", "nhiễu cảm xúc, khó nghe tiếng lòng"],
+  ["The Empress", "Hoàng Hậu", "III", "nuôi dưỡng, phát triển và sức hút", "cho đi quá mức hoặc thiếu chăm sóc bản thân"],
+  ["The Emperor", "Hoàng Đế", "IV", "trật tự, ranh giới và quyết định rõ", "kiểm soát cứng hoặc thiếu nền tảng"],
+  ["The Hierophant", "Giáo Hoàng", "V", "niềm tin, cam kết và khuôn phép", "mắc kẹt trong khuôn cũ"],
+  ["The Lovers", "Nhân Tình", "VI", "lựa chọn từ trái tim và sự hòa hợp", "lệch giá trị hoặc thiếu cam kết"],
+  ["The Chariot", "Cỗ Xe", "VII", "ý chí, tiến lên và kiểm soát hướng đi", "giằng co, mất hướng hoặc nóng vội"],
+  ["Strength", "Sức Mạnh", "VIII", "kiên nhẫn, mềm mà vững và nội lực", "mệt mỏi hoặc tự nghi ngờ"],
+  ["The Hermit", "Ẩn Sĩ", "IX", "chiêm nghiệm và tìm câu trả lời bên trong", "cô lập hoặc suy nghĩ quá lâu"],
+  ["Wheel of Fortune", "Bánh Xe Số Phận", "X", "chu kỳ mới, cơ hội và bước ngoặt", "kẹt vòng lặp cũ"],
+  ["Justice", "Công Lý", "XI", "sự thật, cân bằng và nhân quả", "thiếu công bằng hoặc né sự thật"],
+  ["The Hanged Man", "Người Treo Ngược", "XII", "tạm dừng, đổi góc nhìn và buông kiểm soát", "trì hoãn vô ích"],
+  ["Death", "Cái Chết", "XIII", "kết thúc để tái sinh", "kháng cự thay đổi"],
+  ["Temperance", "Tiết Chế", "XIV", "chữa lành, cân bằng và phối hợp", "mất nhịp hoặc thiếu điều độ"],
+  ["The Devil", "Ác Quỷ", "XV", "ràng buộc, ham muốn và phần bóng tối", "phụ thuộc hoặc tự trói mình"],
+  ["The Tower", "Tòa Tháp", "XVI", "đổ vỡ để lộ sự thật", "né tránh cú thay đổi cần thiết"],
+  ["The Star", "Ngôi Sao", "XVII", "hy vọng, chữa lành và định hướng sáng", "mất niềm tin hoặc cần hồi phục"],
+  ["The Moon", "Mặt Trăng", "XVIII", "mơ hồ, trực giác và nỗi sợ ẩn", "ảo tưởng dần được tháo gỡ"],
+  ["The Sun", "Mặt Trời", "XIX", "rõ ràng, thành công và sức sống", "niềm vui bị che khuất"],
+  ["Judgement", "Phán Xét", "XX", "thức tỉnh, gọi tên sự thật và bước sang giai đoạn mới", "chưa sẵn sàng đáp lời thay đổi"],
+  ["The World", "Thế Giới", "XXI", "hoàn tất, trưởng thành và mở chu kỳ mới", "còn thiếu một mảnh để khép vòng"],
+].map(([name, vi, symbol, upright, reversed]) => ({ name, vi, symbol, upright, reversed }));
+
+const suitConfig = {
+  Cups: { vi: "Cốc", symbol: "C", theme: "cảm xúc, tình yêu và trực giác", blocked: "cảm xúc bị kẹt hoặc kỳ vọng chưa nói" },
+  Wands: { vi: "Gậy", symbol: "G", theme: "đam mê, hành động và ý chí", blocked: "nóng vội, thiếu lửa hoặc hành động lệch hướng" },
+  Swords: { vi: "Kiếm", symbol: "K", theme: "suy nghĩ, sự thật và quyết định", blocked: "căng thẳng, nghi ngờ hoặc lời nói sắc quá mức" },
+  Pentacles: { vi: "Tiền", symbol: "T", theme: "vật chất, công việc và sự ổn định", blocked: "bất ổn tài chính hoặc thiếu nền tảng thực tế" },
+};
+
+const minorRanks = [
+  ["Ace", "Át", "khởi nguồn năng lượng mới"],
+  ["Two", "Hai", "lựa chọn, cân bằng hoặc đối ứng"],
+  ["Three", "Ba", "phát triển, kết nối và bước đầu thành hình"],
+  ["Four", "Bốn", "ổn định, giữ lại hoặc tạm dừng"],
+  ["Five", "Năm", "xáo trộn, thử thách và bài học"],
+  ["Six", "Sáu", "điều chỉnh, hồi phục và trao đổi"],
+  ["Seven", "Bảy", "kiểm chứng, phòng thủ hoặc chọn lọc"],
+  ["Eight", "Tám", "chuyển động, nỗ lực và tăng tốc"],
+  ["Nine", "Chín", "kết tinh, độc lập và thành quả gần tới"],
+  ["Ten", "Mười", "hoàn tất một chu kỳ và gánh trách nhiệm"],
+  ["Page", "Tiểu Đồng", "tin tức, học hỏi và tín hiệu ban đầu"],
+  ["Knight", "Kỵ Sĩ", "hành động, theo đuổi và biến chuyển"],
+  ["Queen", "Nữ Hoàng", "làm chủ nội tâm và nuôi dưỡng năng lượng"],
+  ["King", "Vua", "làm chủ tình huống và quyết định trưởng thành"],
 ];
+
+const minorArcana = Object.entries(suitConfig).flatMap(([suit, config]) =>
+  minorRanks.map(([rank, rankVi, rankMeaning], index) => ({
+    name: `${rank} of ${suit}`,
+    vi: `${rankVi} ${config.vi}`,
+    symbol: `${config.symbol}${index + 1}`,
+    upright: `${rankMeaning} trong lĩnh vực ${config.theme}`,
+    reversed: `${config.blocked}; bài học là xử lý phần ${rankMeaning.toLowerCase()} chưa ổn`,
+  }))
+);
+
+const tarotDeck = [...majorArcana, ...minorArcana];
 
 function hashText(value) {
   return [...value].reduce((sum, char) => sum + char.charCodeAt(0), 0);
