@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: xemboi-bot
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: META_VERIFY_TOKEN
+        value: xemboi_verify_token
+      - key: META_PAGE_ACCESS_TOKEN
+        sync: false
