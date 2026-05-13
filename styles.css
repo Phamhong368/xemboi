@@ -164,6 +164,12 @@ p {
   font-weight: 900;
 }
 
+.question-hint {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
 .deep-questions label:first-of-type {
   margin-top: 16px;
 }

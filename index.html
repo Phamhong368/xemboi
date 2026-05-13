@@ -82,7 +82,7 @@
             </label>
             <label>
               Chủ đề
-              <select name="topic">
+              <select name="topic" id="topicSelect">
                 <option value="tong-quan">Tổng quan</option>
                 <option value="tinh-duyen">Tình duyên</option>
                 <option value="su-nghiep">Sự nghiệp</option>
@@ -120,6 +120,9 @@
 
           <details class="deep-questions">
             <summary>Thêm 1-3 câu hỏi chuyên sâu</summary>
+            <p class="question-hint" id="questionHint">
+              Gợi ý câu hỏi sẽ thay đổi theo chủ đề bạn chọn.
+            </p>
             <label>
               Câu hỏi chuyên sâu 1
               <textarea name="deepQuestion1" rows="2" placeholder="Điều gì đang cản trở tôi hoặc mối quan hệ này?"></textarea>

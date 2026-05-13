@@ -17,6 +17,13 @@ const messengerTop = document.querySelector("#messengerTop");
 const floatingMessenger = document.querySelector("#floatingMessenger");
 const readingMode = document.querySelector("#readingMode");
 const partnerFields = document.querySelector("#partnerFields");
+const topicSelect = document.querySelector("#topicSelect");
+const questionHint = document.querySelector("#questionHint");
+const deepQuestionFields = [
+  form.elements.deepQuestion1,
+  form.elements.deepQuestion2,
+  form.elements.deepQuestion3,
+];
 
 let latestShareText = "Tôi vừa gieo quẻ trên Xem Bói An Nhiên.";
 let latestConsultText = "";
@@ -27,13 +34,57 @@ businessInboxLink.href = BUSINESS_INBOX_URL;
 messengerTop.href = CUSTOMER_CONTACT_URL;
 floatingMessenger.href = CUSTOMER_CONTACT_URL;
 
+const deepQuestionSuggestions = {
+  "tong-quan": [
+    "Vấn đề cốt lõi tôi cần nhìn thẳng lúc này là gì?",
+    "Trong 7 ngày tới tôi nên ưu tiên điều gì để mở vận?",
+    "Tôi đang lặp lại mẫu cũ nào mà chưa nhận ra?",
+  ],
+  "tinh-duyen": [
+    "Người ấy thật sự đang cần điều gì từ mối quan hệ này?",
+    "Mối quan hệ này có điểm nghẽn cảm xúc nào cần tháo?",
+    "Tôi nên chủ động, chờ đợi hay đặt ranh giới rõ hơn?",
+  ],
+  "su-nghiep": [
+    "Điểm nghẽn lớn nhất trong công việc của tôi hiện tại là gì?",
+    "Tôi nên tập trung vào cơ hội nào để có kết quả rõ nhất?",
+    "Có dấu hiệu nào cho thấy tôi nên đổi hướng hoặc kiên trì?",
+  ],
+  "tai-loc": [
+    "Dòng tiền của tôi đang bị hao ở điểm nào?",
+    "Cơ hội tăng thu gần nhất đến từ kỹ năng hay mối quan hệ nào?",
+    "Tôi nên tránh quyết định tài chính nào trong thời gian tới?",
+  ],
+  couple: [
+    "Hai đứa có duyên đi đường dài không?",
+    "Điểm lệch lớn nhất giữa em và người ấy là gì?",
+    "Em nên làm gì để mối quan hệ rõ ràng hơn trong 7 ngày tới?",
+  ],
+};
+
+function updateDeepQuestionPrompts() {
+  const key = readingMode.value === "couple" ? "couple" : topicSelect.value;
+  const suggestions = deepQuestionSuggestions[key] || deepQuestionSuggestions["tong-quan"];
+  questionHint.textContent = `Gợi ý: ${suggestions.join(" · ")}`;
+  deepQuestionFields.forEach((field, index) => {
+    field.placeholder = suggestions[index];
+  });
+}
+
 readingMode.addEventListener("change", () => {
   const isCouple = readingMode.value === "couple";
   partnerFields.hidden = !isCouple;
   for (const field of partnerFields.querySelectorAll("input")) {
     field.required = isCouple && field.name !== "partnerBirthTime";
   }
+  if (isCouple) {
+    topicSelect.value = "tinh-duyen";
+  }
+  updateDeepQuestionPrompts();
 });
+
+topicSelect.addEventListener("change", updateDeepQuestionPrompts);
+updateDeepQuestionPrompts();
 
 const topicCopy = {
   "tong-quan": {
@@ -268,16 +319,47 @@ function buildDeepAnswers(data, reading, seed) {
     .map((question) => (question || "").trim())
     .filter(Boolean)
     .slice(0, 3);
-  const answerStyles = [
-    `Quẻ ${reading.palace} cho thấy trọng tâm không nằm ở câu trả lời nhanh, mà ở việc bạn dám nhìn thẳng phần đang né tránh. Hãy chọn một hành động nhỏ có thể kiểm chứng trong 24 giờ.`,
-    `Tổ hợp ${reading.zodiac} và số chủ đạo ${reading.lifePath} nghiêng về việc làm rõ ranh giới. Điều nên hỏi tiếp là: việc này đến từ tình yêu, thói quen hay nỗi sợ mất mát?`,
-    `Vận hiện tại khuyên bạn đừng ép kết quả. Nếu một việc cần sự đồng thuận, hãy nhìn phản ứng của đối phương khi bạn nói thật nhu cầu của mình.`,
-  ];
+  const answerStyles = getTopicDeepAnswerStyles(data, reading);
 
   return questions.map((question, index) => ({
     question,
     answer: answerStyles[(seed + index) % answerStyles.length],
   }));
+}
+
+function getTopicDeepAnswerStyles(data, reading) {
+  if (data.readingMode === "couple") {
+    return [
+      `Quẻ ${reading.palace} cho thấy mối quan hệ này cần sự rõ ràng hơn là thêm thử lòng. Nếu muốn đi xa, hai bạn cần nói thật về kỳ vọng và nhịp cam kết.`,
+      `Điểm sâu nằm ở cảm giác an toàn. Khi một người im lặng hoặc né tránh, người còn lại dễ tự diễn giải. Việc nên làm là hỏi thẳng nhưng không ép câu trả lời ngay.`,
+      `Duyên còn hay hết không chỉ nhìn vào cảm xúc mạnh, mà nhìn vào khả năng sửa sai sau va chạm. Trong 7 ngày tới, hãy quan sát hành động ổn định hơn lời hứa.`,
+    ];
+  }
+
+  const stylesByTopic = {
+    "tong-quan": [
+      `Quẻ ${reading.palace} cho thấy điều cốt lõi là sắp lại thứ tự ưu tiên. Bạn đang mất năng lượng vì để việc nhỏ chen vào việc lớn.`,
+      `Tổ hợp ${reading.zodiac} và số chủ đạo ${reading.lifePath} khuyên bạn nhìn lại một mẫu lặp cũ: cứ gần đến quyết định thì lại tìm thêm dấu hiệu để trì hoãn.`,
+      `Trong 7 ngày tới, vận mở qua một việc rất cụ thể. Đừng hỏi "mọi thứ có tốt không", hãy hỏi "việc nào làm xong sẽ làm mọi thứ nhẹ hơn".`,
+    ],
+    "tinh-duyen": [
+      `Tình duyên hiện tại cần sự thật mềm, không phải im lặng đẹp. Nếu có điều làm bạn bất an, hãy nói bằng nhu cầu thay vì trách móc.`,
+      `Quẻ ${reading.palace} cho thấy điểm nghẽn là nhịp cảm xúc không đều. Một người muốn chắc chắn, người kia có thể cần thêm không gian.`,
+      `Dấu hiệu cần chú ý là sự nhất quán. Người hợp với bạn không chỉ làm bạn rung động, mà còn khiến bạn thấy an toàn khi là chính mình.`,
+    ],
+    "su-nghiep": [
+      `Sự nghiệp đang cần một kết quả đo được. Đừng cố chứng minh bằng quá nhiều việc; hãy chọn một mũi nhọn đủ rõ để người khác nhìn thấy năng lực.`,
+      `Điểm nghẽn không hẳn là thiếu cơ hội, mà là thiếu cách đóng gói giá trị của bạn. Hãy nói rõ bạn giải quyết vấn đề gì và kết quả là gì.`,
+      `Nếu đang phân vân đổi hướng, hãy thử một bước nhỏ trước khi cắt hẳn đường cũ. Quẻ này hợp kiểm chứng, không hợp quyết định trong bốc đồng.`,
+    ],
+    "tai-loc": [
+      `Tài lộc hiện tại nghiêng về giữ tiền trước khi kiếm thêm. Có khoản hao nhỏ nhưng lặp lại đang làm dòng tiền mất lực.`,
+      `Cơ hội tăng thu đến từ thứ bạn đã biết làm, không phải một hướng hoàn toàn xa lạ. Vấn đề là biến kỹ năng đó thành lời đề nghị có giá trị rõ.`,
+      `Tránh quyết định tiền bạc khi muốn chứng minh bản thân. Quẻ ${reading.palace} khuyên kiểm tra rủi ro, thời hạn và người chịu trách nhiệm trước khi xuống tiền.`,
+    ],
+  };
+
+  return stylesByTopic[data.topic] || stylesByTopic["tong-quan"];
 }
 
 function buildCoupleReading(data, reading, seed) {
