@@ -339,7 +339,10 @@ async function sendMessengerText(recipientId, text) {
 
   if (!response.ok) {
     console.error("Messenger send failed:", response.status, await response.text());
+    return;
   }
+
+  console.log("Messenger reply sent:", response.status, text.slice(0, 80));
 }
 
 function readJson(request) {
@@ -374,11 +377,13 @@ const server = http.createServer(async (request, response) => {
     const challenge = url.searchParams.get("hub.challenge");
 
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
+      console.log("Webhook verified successfully.");
       response.writeHead(200, { "Content-Type": "text/plain" });
       response.end(challenge);
       return;
     }
 
+    console.warn("Webhook verification failed:", { mode, token });
     response.writeHead(403);
     response.end("Forbidden");
     return;
@@ -395,8 +400,11 @@ const server = http.createServer(async (request, response) => {
           const text = event.message?.text;
 
           if (senderId && text) {
+            console.log("Incoming message:", { senderId, text });
             const reply = handleBotMessage(senderId, text);
             await sendMessengerText(senderId, reply);
+          } else {
+            console.log("Ignored webhook event:", JSON.stringify(event).slice(0, 500));
           }
         }
       }
