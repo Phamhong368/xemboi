@@ -202,6 +202,21 @@ const numerologyAdvice = {
   9: "Số 9 thiên về bao dung, nên khép lại việc cũ để mở vận mới.",
 };
 
+const tarotDeck = [
+  { name: "The Fool", vi: "Kẻ Khờ", symbol: "0", upright: "khởi đầu mới, niềm tin và sự tự do", reversed: "vội vàng, thiếu chuẩn bị hoặc né trách nhiệm" },
+  { name: "The Magician", vi: "Nhà Ảo Thuật", symbol: "I", upright: "năng lực biến ý tưởng thành hành động", reversed: "tiềm năng chưa được dùng đúng cách" },
+  { name: "The High Priestess", vi: "Nữ Tư Tế", symbol: "II", upright: "trực giác, bí mật và điều chưa nói ra", reversed: "nhiễu cảm xúc, khó nghe tiếng lòng thật" },
+  { name: "The Empress", vi: "Hoàng Hậu", symbol: "III", upright: "nuôi dưỡng, phát triển và sức hút tự nhiên", reversed: "cho đi quá mức hoặc thiếu chăm sóc bản thân" },
+  { name: "The Emperor", vi: "Hoàng Đế", symbol: "IV", upright: "trật tự, ranh giới và quyết định rõ", reversed: "kiểm soát cứng hoặc thiếu nền tảng" },
+  { name: "The Lovers", vi: "Nhân Tình", symbol: "VI", upright: "lựa chọn từ trái tim và sự hòa hợp", reversed: "lệch giá trị, thiếu cam kết hoặc phân vân" },
+  { name: "The Chariot", vi: "Cỗ Xe", symbol: "VII", upright: "tiến lên, ý chí và kiểm soát hướng đi", reversed: "giằng co, mất hướng hoặc nóng vội" },
+  { name: "Strength", vi: "Sức Mạnh", symbol: "VIII", upright: "kiên nhẫn, mềm mà vững và nội lực", reversed: "mệt mỏi, tự nghi ngờ hoặc phản ứng quá mạnh" },
+  { name: "The Hermit", vi: "Ẩn Sĩ", symbol: "IX", upright: "chiêm nghiệm, tìm câu trả lời bên trong", reversed: "cô lập hoặc suy nghĩ quá lâu" },
+  { name: "Wheel of Fortune", vi: "Bánh Xe Số Phận", symbol: "X", upright: "chu kỳ mới, cơ hội và bước ngoặt", reversed: "kẹt vòng lặp cũ hoặc chống lại thay đổi" },
+  { name: "Justice", vi: "Công Lý", symbol: "XI", upright: "sự thật, cân bằng và nhân quả", reversed: "thiếu công bằng hoặc chưa dám đối diện sự thật" },
+  { name: "The Star", vi: "Ngôi Sao", symbol: "XVII", upright: "hy vọng, chữa lành và định hướng sáng", reversed: "mất niềm tin hoặc cần hồi phục thêm" },
+];
+
 function hashText(value) {
   return [...value].reduce((sum, char) => sum + char.charCodeAt(0), 0);
 }
@@ -311,7 +326,57 @@ function buildDeepReading(data, reading, seed) {
     timeline: buildTimeline(seed, reading),
     deepAnswers: buildDeepAnswers(data, reading, seed),
     couple: buildCoupleReading(data, reading, seed),
+    tarot: buildTarotSpread(data, reading, seed),
   };
+}
+
+function buildTarotSpread(data, reading, seed) {
+  const positions =
+    data.readingMode === "couple"
+      ? ["Năng lượng của bạn", "Năng lượng người ấy", "Hướng đi của mối quan hệ"]
+      : ["Gốc vấn đề", "Điều cần nhìn rõ", "Lời khuyên"];
+  const used = new Set();
+
+  return positions.map((position, index) => {
+    let cardIndex = Math.abs(seed + reading.lifePath * (index + 2) + index * 7) % tarotDeck.length;
+    while (used.has(cardIndex)) {
+      cardIndex = (cardIndex + 1) % tarotDeck.length;
+    }
+    used.add(cardIndex);
+
+    const card = tarotDeck[cardIndex];
+    const reversed = (seed + index + reading.luck) % 4 === 0;
+    const meaning = reversed ? card.reversed : card.upright;
+    const topicLine = getTarotTopicLine(data, reading, card, reversed, index);
+
+    return {
+      ...card,
+      position,
+      reversed,
+      meaning,
+      topicLine,
+    };
+  });
+}
+
+function getTarotTopicLine(data, reading, card, reversed, index) {
+  if (data.readingMode === "couple") {
+    const lines = [
+      "Lá này cho thấy cách bạn đang bước vào mối quan hệ: phần muốn gần hơn và phần vẫn cần được an toàn.",
+      "Lá này phản ánh điều người ấy có thể đang mang trong lòng, không nên chỉ nhìn qua lời nói bên ngoài.",
+      "Lời nhắn là hãy để hành động đều đặn trả lời cho cảm xúc, thay vì ép một cam kết quá nhanh.",
+    ];
+    return lines[index];
+  }
+
+  const topicLines = {
+    "tong-quan": "Lá này nhắc bạn chọn một việc trọng tâm, vì vận hiện tại mở qua sự rõ ràng chứ không qua ôm đồm.",
+    "tinh-duyen": "Trong tình cảm, lá này khuyên nhìn vào mức độ an toàn và sự nhất quán hơn là cảm xúc nhất thời.",
+    "su-nghiep": "Trong công việc, lá này chỉ ra việc cần biến năng lực thành kết quả cụ thể, có người nhìn thấy được.",
+    "tai-loc": "Trong tài lộc, lá này nhắc kiểm tra dòng tiền và tránh quyết định vì cảm xúc hoặc sĩ diện.",
+  };
+
+  return `${topicLines[data.topic] || topicLines["tong-quan"]} ${reversed ? "Vì lá ở thế ngược, hãy chậm lại để sửa nền trước khi tiến." : "Vì lá ở thế xuôi, có thể chủ động bước tiếp nhưng cần giữ nhịp ổn định."}`;
 }
 
 function buildDeepAnswers(data, reading, seed) {
@@ -498,6 +563,25 @@ function renderReading(data, reading) {
       </div>
     </section>`
     : "";
+  const tarotSection = `
+    <section class="reading-section">
+      <h3>Trải bài tarot 3 lá</h3>
+      <p>Ba lá bài được rút theo năng lượng lá số, chủ đề và câu hỏi hiện tại.</p>
+      <div class="tarot-spread">
+        ${reading.deep.tarot
+          .map(
+            (card) => `
+              <div class="tarot-card">
+                <div class="tarot-symbol">${card.symbol}</div>
+                <span>${card.position}</span>
+                <strong>${card.vi} ${card.reversed ? "(ngược)" : "(xuôi)"}</strong>
+                <p>${card.meaning}. ${card.topicLine}</p>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    </section>`;
 
   resultCard.innerHTML = `
     <p class="eyebrow">Kết quả ${reading.topic.title}</p>
@@ -530,6 +614,7 @@ function renderReading(data, reading) {
       <h3>Luận theo chủ đề</h3>
       <p>${reading.deep.topicFocus}</p>
     </section>
+    ${tarotSection}
     ${coupleSection}
     ${deepQuestionSection}
     <section class="reading-section">
@@ -601,6 +686,8 @@ function buildConsultText(data, reading) {
     "Tóm tắt luận giải:",
     reading.deep.currentFlow,
     reading.deep.topicFocus,
+    "Tarot:",
+    ...reading.deep.tarot.map((card) => `${card.position}: ${card.vi} ${card.reversed ? "(ngược)" : "(xuôi)"} - ${card.meaning}`),
     reading.deep.couple ? reading.deep.couple.summary : "",
   ].join("\n");
 }
